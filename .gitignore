@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.env*
+!.env.example
+playwright-report/
+test-results/
+.DS_Store
+
+# Keep the supplied source PDF locally; deploy extracted web assets.
+/RNB CORPORATE PROFILE 2026.pdf
