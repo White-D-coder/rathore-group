@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Navbar, Footer } from "@/components/SiteChrome";
 import Motion from "@/components/Motion";
 import "./globals.css";
+import "./redesign.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://rathore-group-legacy.keyursatra.chatgpt.site"),
   title: {

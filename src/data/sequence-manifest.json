@@ -1,0 +1,13 @@
+{
+  "version": "87dd517ee30c",
+  "desktop": {
+    "count": 180,
+    "width": 1280,
+    "height": 800
+  },
+  "mobile": {
+    "count": 120,
+    "width": 600,
+    "height": 900
+  }
+}

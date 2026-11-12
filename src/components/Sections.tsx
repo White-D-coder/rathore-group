@@ -24,9 +24,6 @@ import {
   TrendingUp,
   ExternalLink,
 } from "lucide-react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Scene from "./Scene";
 import CredentialsGallery from "./CredentialsGallery";
 import {
   capabilities,
@@ -187,25 +184,6 @@ export function AboutSection({ full = false }: { full?: boolean }) {
 export function CapabilitiesSection({ full = false }: { full?: boolean }) {
   const [active, setActive] = useState(0);
   const root = useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (
-      full ||
-      window.matchMedia(
-        "(max-width: 900px), (max-height: 850px), (prefers-reduced-motion: reduce)",
-      ).matches
-    )
-      return;
-    gsap.registerPlugin(ScrollTrigger);
-    const st = ScrollTrigger.create({
-      trigger: root.current,
-      start: "top 80px",
-      end: "+=1000",
-      pin: true,
-      pinSpacing: true,
-      onUpdate: (s) => setActive(Math.min(3, Math.floor(s.progress * 4))),
-    });
-    return () => st.kill();
-  }, [full]);
   const c = capabilities[active];
   const icons = [Building2, Route, Waves, Recycle];
   return (
@@ -279,9 +257,37 @@ export function CapabilitiesSection({ full = false }: { full?: boolean }) {
           <div className="capability-visual">
             <div className="technical-cross cross-tl" />
             <div className="technical-cross cross-br" />
-            <Scene variant="capability" kind={c.scene} />
+            <img
+              className="capability-project-photo"
+              src={
+                [
+                  "/images/projects/kanjurmarg-hospital.webp",
+                  "/images/projects/pangong-road.webp",
+                  "/images/projects/parbhani-water-supply.webp",
+                  "/images/projects/badlapur-waste-plant.webp",
+                ][active]
+              }
+              alt={
+                [
+                  "Mother–Child Hospital, Kanjurmarg",
+                  "Lukung–Chartse Road, Ladakh",
+                  "Parbhani Water Supply Scheme",
+                  "Badlapur Waste Plant",
+                ][active]
+              }
+              loading="lazy"
+              width="900"
+              height="650"
+            />
             <span className="model-label">
-              R&B / INFRASTRUCTURE STUDY — {c.number}
+              {
+                [
+                  "MOTHER–CHILD HOSPITAL / KANJURMARG",
+                  "LUKUNG–CHARTSE ROAD / LADAKH",
+                  "WATER SUPPLY SCHEME / PARBHANI",
+                  "WASTE PLANT / BADLAPUR",
+                ][active]
+              }
             </span>
             <span className="model-note">CONCEPTUAL 3D VISUALIZATION</span>
             <div className="model-orbit" />
@@ -408,35 +414,6 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
     setStatus(s);
     track.current?.scrollTo({ left: 0, behavior: "smooth" });
   }
-  useEffect(() => {
-    if (
-      full ||
-      window.matchMedia(
-        "(max-width: 900px), (max-height: 850px), (prefers-reduced-motion: reduce)",
-      ).matches
-    )
-      return;
-    gsap.registerPlugin(ScrollTrigger);
-    let max = 0;
-    const tween = gsap.to(track.current, {
-      scrollLeft: () => {
-        max =
-          (track.current?.scrollWidth || 0) - (track.current?.clientWidth || 0);
-        return Math.min(max, 900);
-      },
-      ease: "none",
-      scrollTrigger: {
-        trigger: track.current,
-        start: "top 70%",
-        end: "bottom 15%",
-        scrub: 1,
-      },
-    });
-    return () => {
-      tween.scrollTrigger?.kill();
-      tween.kill();
-    };
-  }, [full, status]);
   return (
     <section className="projects-section section-pad" id="projects">
       <div className="container">
@@ -916,23 +893,6 @@ export function StrengthsSection() {
 export function EquipmentSection() {
   const [active, setActive] = useState(0);
   const root = useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (
-      window.matchMedia(
-        "(max-width: 900px), (max-height: 850px), (prefers-reduced-motion: reduce)",
-      ).matches
-    )
-      return;
-    gsap.registerPlugin(ScrollTrigger);
-    const st = ScrollTrigger.create({
-      trigger: root.current,
-      start: "top 80px",
-      end: "+=1400",
-      pin: true,
-      onUpdate: (s) => setActive(Math.min(11, Math.floor(s.progress * 12))),
-    });
-    return () => st.kill();
-  }, []);
   return (
     <section className="equipment-section" id="equipment" ref={root}>
       <div className="equipment-photo equipment-gallery-photo">

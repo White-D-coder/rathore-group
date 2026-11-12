@@ -1,6 +1,7 @@
 import { chromium } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 await mkdir("/tmp/rathore-qa", { recursive: true });
+const base = process.env.RATHORE_BASE_URL || "http://127.0.0.1:3019";
 const browser = await chromium.launch({
   channel: "chrome",
   headless: true,
@@ -20,9 +21,11 @@ page.on("pageerror", (e) => errors.push(e.message));
 page.on("response", (r) => {
   if (r.status() >= 400) failures.push(`${r.status()} ${r.url()}`);
 });
-await page.goto("http://127.0.0.1:3018/", { waitUntil: "networkidle" });
+await page.goto(base + "/", { waitUntil: "networkidle" });
 await page.waitForTimeout(1800);
-await page.locator(".scene-hero canvas").waitFor({ timeout: 15000 });
+await page.waitForFunction(
+  () => document.querySelector(".journey-canvas")?.dataset.frame === "0",
+);
 await page.screenshot({ path: "/tmp/rathore-qa/desktop-hero.png" });
 console.log(
   "Hero:",
@@ -36,7 +39,7 @@ await page.screenshot({ path: "/tmp/rathore-qa/desktop-about.png" });
 await page.locator("#capabilities").scrollIntoViewIfNeeded();
 await page.waitForTimeout(1000);
 await page.screenshot({ path: "/tmp/rathore-qa/desktop-capabilities.png" });
-await page.goto("http://127.0.0.1:3018/projects/", {
+await page.goto(base + "/projects/", {
   waitUntil: "networkidle",
 });
 await page.getByRole("tab", { name: /Ongoing projects/ }).click();
@@ -54,7 +57,7 @@ await page.keyboard.press("Escape");
 if (await page.locator(".project-dialog").evaluate((d) => d.open))
   throw Error("Project dialog did not close with Escape");
 console.log("PASS project filters and modal keyboard dismissal");
-await page.goto("http://127.0.0.1:3018/our-presence/", {
+await page.goto(base + "/our-presence/", {
   waitUntil: "networkidle",
 });
 await page.getByRole("button", { name: "Ladakh", exact: true }).click();
@@ -63,7 +66,7 @@ if (
 )
   throw Error("Region project selection failed");
 console.log("PASS region/project selection");
-await page.goto("http://127.0.0.1:3018/contact/", { waitUntil: "networkidle" });
+await page.goto(base + "/contact/", { waitUntil: "networkidle" });
 await page.getByLabel("Full name").fill("QA Reviewer");
 await page.getByLabel("Email address").fill("qa@example.com");
 await page
@@ -96,7 +99,7 @@ const mobile = await browser.newPage({
   hasTouch: true,
 });
 mobile.on("pageerror", (e) => errors.push(e.message));
-await mobile.goto("http://127.0.0.1:3018/", { waitUntil: "networkidle" });
+await mobile.goto(base + "/", { waitUntil: "networkidle" });
 await mobile.waitForTimeout(1800);
 await mobile.screenshot({ path: "/tmp/rathore-qa/mobile-hero.png" });
 await mobile.getByRole("button", { name: "Open navigation" }).click();
@@ -117,7 +120,7 @@ for (const route of [
   "/leadership/",
   "/contact/",
 ]) {
-  await mobile.goto("http://127.0.0.1:3018" + route, {
+  await mobile.goto(base + "" + route, {
     waitUntil: "networkidle",
   });
   const width = await mobile.evaluate(() => ({
@@ -136,9 +139,18 @@ const reduced = await browser.newPage({
   viewport: { width: 390, height: 844 },
   reducedMotion: "reduce",
 });
-await reduced.goto("http://127.0.0.1:3018/", { waitUntil: "networkidle" });
-if (await reduced.locator(".scene-hero canvas").count())
-  throw Error("Reduced motion hero should use static fallback");
+await reduced.goto(base + "/", { waitUntil: "networkidle" });
+await reduced.waitForFunction(
+  () => document.querySelector(".journey-canvas")?.dataset.frame === "0",
+);
+await reduced.evaluate(() =>
+  window.scrollTo({ top: 200, behavior: "instant" }),
+);
+await reduced.waitForTimeout(300);
+if (
+  (await reduced.locator(".journey-canvas").getAttribute("data-frame")) !== "0"
+)
+  throw Error("Reduced motion should keep its still frame");
 console.log("PASS reduced motion fallback");
 console.log(JSON.stringify({ errors, failures }, null, 2));
 await browser.close();
