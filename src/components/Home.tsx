@@ -18,15 +18,12 @@ import {
 } from "./Sections";
 
 export function Stats() {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const o = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) {
-          setVisible(true);
-          o.disconnect();
-        }
+        setVisible(e.isIntersecting);
       },
       { threshold: 0.3 },
     );
@@ -73,7 +70,7 @@ function Count({
   const [onScreen, setOnScreen] = useState(false);
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setOnScreen(true); observer.disconnect(); }
+      setOnScreen(entry.isIntersecting);
     }, { threshold: 0.4 });
     if (number.current) observer.observe(number.current);
     return () => observer.disconnect();
@@ -85,6 +82,7 @@ function Count({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     )
       return;
+    setN(0);
     let frame = 0;
     const start = performance.now();
     function animate(now: number) {

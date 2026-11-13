@@ -182,119 +182,107 @@ export function AboutSection({ full = false }: { full?: boolean }) {
   );
 }
 
+const capabilityProjects = [
+  { image: "/images/projects/kanjurmarg-hospital.webp", title: "Mother–Child Hospital", location: "Kanjurmarg, Mumbai", focus: "Spaces for communities" },
+  { image: "/images/projects/pangong-road.webp", title: "Lukung–Chartse Road", location: "Ladakh", focus: "Connections that matter" },
+  { image: "/images/projects/parbhani-water-supply.webp", title: "Water Supply Scheme", location: "Parbhani, Maharashtra", focus: "Systems that sustain life" },
+  { image: "/images/projects/badlapur-waste-plant.webp", title: "Waste Processing Plant", location: "Badlapur, Maharashtra", focus: "Resources reimagined" },
+];
+
 export function CapabilitiesSection({ full = false }: { full?: boolean }) {
   const [active, setActive] = useState(0);
-  const root = useRef<HTMLElement>(null);
   const c = capabilities[active];
+  const project = capabilityProjects[active];
   const icons = [Building2, Route, Waves, Recycle];
+  const ActiveIcon = icons[active];
   return (
     <section
-      className="capabilities-section section-pad"
+      className="capabilities-section expertise-section section-pad"
       id="capabilities"
-      ref={root}
+      aria-labelledby="expertise-heading"
     >
       <div className="container">
         <SectionLabel number="02 / THE EXPERTISE">WHAT WE BUILD</SectionLabel>
-        <div className="section-heading-row">
-          <RevealText as="h2">
-            Essential infrastructure.
-            <br />
-            <span className="muted">Extraordinary possibilities.</span>
+        <div className="expertise-heading">
+          <RevealText as="h2" id="expertise-heading">
+            Built for life.<br />
+            <span className="serif-accent">Engineered to last.</span>
           </RevealText>
-          <p>
-            Four core capabilities.
-            <br />
-            One commitment to a better tomorrow.
-          </p>
+          <div className="expertise-intro">
+            <span className="expertise-kicker">FOUR DISCIPLINES. ONE SHARED PURPOSE.</span>
+            <p>From the places we gather to the systems we depend on. We build the infrastructure that moves everyday life forward.</p>
+          </div>
         </div>
-        <div className="capability-stage">
-        <div
-          className="capability-tabs"
-          role="tablist"
-          aria-label="Infrastructure capabilities"
-        >
+        <div className="expertise-tabs" role="tablist" aria-label="Infrastructure capabilities">
           {capabilities.map((item, i) => (
             <button
               key={item.id}
+              className="expertise-tab"
               role="tab"
               id={`tab-${item.id}`}
               aria-selected={active === i}
               aria-controls="capability-panel"
+              tabIndex={active === i ? 0 : -1}
               onClick={() => setActive(i)}
+              onKeyDown={(event) => {
+                let next = i;
+                if (event.key === "ArrowRight") next = (i + 1) % capabilities.length;
+                else if (event.key === "ArrowLeft") next = (i - 1 + capabilities.length) % capabilities.length;
+                else if (event.key === "Home") next = 0;
+                else if (event.key === "End") next = capabilities.length - 1;
+                else return;
+                event.preventDefault();
+                setActive(next);
+                const tabs = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+                tabs?.[next]?.focus();
+              }}
             >
-              <span>{item.number}</span>
-              {item.title}
-              <ArrowUpRight size={17} />
+              <span className="expertise-tab-number">{item.number}</span>
+              <span className="expertise-tab-title">{item.title}</span>
+              <span className="expertise-tab-focus">{capabilityProjects[i].focus}</span>
+              <ArrowUpRight size={20} aria-hidden="true" />
             </button>
           ))}
         </div>
         <div
-          className="capability-content"
+          className="expertise-panel"
           role="tabpanel"
           id="capability-panel"
           aria-labelledby={`tab-${c.id}`}
+          tabIndex={0}
         >
-          <div className="capability-copy" key={c.id}>
-            <span className="eyebrow">
-              {c.number} / {c.title}
-            </span>
+          <figure className="expertise-photo" key={`image-${c.id}`}>
+            <img
+              src={project.image}
+              alt={`${project.title}, ${project.location}`}
+              loading="lazy"
+              width="1000"
+              height="850"
+            />
+            <span className="expertise-photo-tag">IN THE FIELD / {c.number}</span>
+            <figcaption>
+              <div><span>OUR WORK IN FOCUS</span><strong>{project.title}</strong></div>
+              <span className="expertise-location"><MapPin size={14} aria-hidden="true" />{project.location}</span>
+            </figcaption>
+          </figure>
+          <div className="expertise-detail" key={c.id}>
+            <div className="expertise-detail-top">
+              <ActiveIcon size={27} strokeWidth={1.25} aria-hidden="true" />
+              <span>{c.number} / 04</span>
+            </div>
             <RevealText as="h3">{c.subtitle}</RevealText>
             <p>{c.description}</p>
             <ul>
-              {c.items.map((t) => (
-                <li key={t}>
-                  <span />
-                  {t}
-                </li>
-              ))}
+              {c.items.map((item) => <li key={item}><span aria-hidden="true" />{item}</li>)}
             </ul>
             <Link
               href={full ? "/contact/" : `/capabilities/#${c.id}`}
-              className="underlined-link"
+              className="expertise-link"
             >
-              {full ? "Discuss a project" : "Explore this capability"}{" "}
-              <ArrowUpRight size={18} />
+              {full ? "Discuss a project" : "Explore this capability"}
+              <span><ArrowUpRight size={20} aria-hidden="true" /></span>
             </Link>
           </div>
-          <div className="capability-visual" key={`image-${c.id}`}>
-            <div className="technical-cross cross-tl" />
-            <div className="technical-cross cross-br" />
-            <img
-              className="capability-project-photo"
-              src={
-                [
-                  "/images/projects/kanjurmarg-hospital.webp",
-                  "/images/projects/pangong-road.webp",
-                  "/images/projects/parbhani-water-supply.webp",
-                  "/images/projects/badlapur-waste-plant.webp",
-                ][active]
-              }
-              alt={
-                [
-                  "Mother–Child Hospital, Kanjurmarg",
-                  "Lukung–Chartse Road, Ladakh",
-                  "Parbhani Water Supply Scheme",
-                  "Badlapur Waste Plant",
-                ][active]
-              }
-              loading="lazy"
-              width="900"
-              height="650"
-            />
-            <span className="model-label">
-              {
-                [
-                  "MOTHER–CHILD HOSPITAL / KANJURMARG",
-                  "LUKUNG–CHARTSE ROAD / LADAKH",
-                  "WATER SUPPLY SCHEME / PARBHANI",
-                  "WASTE PLANT / BADLAPUR",
-                ][active]
-              }
-            </span>
-
-            <div className="model-orbit" />
-          </div>
-        </div>
         </div>
         {full && (
           <div className="capability-all">
@@ -403,11 +391,110 @@ function ProjectDialog({
     </dialog>
   );
 }
+function scrollProjectTrack(element: HTMLDivElement, direction: number, from: number) {
+  const cards = [...element.querySelectorAll<HTMLElement>(".project-card")];
+  const first = cards[0];
+  if (!first) return 0;
+  const positions = cards.map((card) => card.offsetLeft - first.offsetLeft);
+  const destination = direction > 0
+    ? positions.find((position) => position > from + 2)
+    : positions.reverse().find((position) => position < from - 2);
+  const target = Math.max(0, Math.min(
+    element.scrollWidth - element.clientWidth,
+    destination ?? (direction > 0 ? element.scrollWidth : 0),
+  ));
+  element.scrollTo({
+    left: target,
+    behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+  });
+  return target;
+}
+
 export function ProjectShowcase({ full = false }: { full?: boolean }) {
   const [status, setStatus] = useState<"Completed" | "Ongoing">("Completed");
   const [category, setCategory] = useState("All sectors");
   const [selected, setSelected] = useState<Project | null>(null);
   const track = useRef<HTMLDivElement>(null);
+  const dragged = useRef(false);
+  const navigationTarget = useRef<number | null>(null);
+  useEffect(() => {
+    const element = track.current;
+    if (full || !element) return;
+    let frame = 0;
+    let pendingLeft: number | null = null;
+    let maxScroll = Math.max(0, element.scrollWidth - element.clientWidth);
+    let drag: { id: number; x: number; left: number } | null = null;
+
+    function flushScroll() {
+      frame = 0;
+      if (pendingLeft === null) return;
+      element!.scrollTo({ left: pendingLeft, behavior: "instant" });
+      pendingLeft = null;
+    }
+    function scheduleScroll(left: number) {
+      pendingLeft = Math.max(0, Math.min(maxScroll, left));
+      if (!frame) frame = requestAnimationFrame(flushScroll);
+    }
+    const resize = new ResizeObserver(() => {
+      maxScroll = Math.max(0, element.scrollWidth - element.clientWidth);
+    });
+    resize.observe(element);
+
+    const resetNavigation = () => { navigationTarget.current = null; };
+    function pointerDown(event: PointerEvent) {
+      resetNavigation();
+      if (event.pointerType !== "mouse" || event.button !== 0) return;
+      dragged.current = false;
+      drag = { id: event.pointerId, x: event.clientX, left: element!.scrollLeft };
+    }
+    function pointerMove(event: PointerEvent) {
+      if (!drag || event.pointerId !== drag.id) return;
+      const distance = event.clientX - drag.x;
+      if (!dragged.current && Math.abs(distance) < 6) return;
+      if (!dragged.current) {
+        dragged.current = true;
+        element!.setPointerCapture(event.pointerId);
+        element!.classList.add("is-dragging");
+      }
+      event.preventDefault();
+      scheduleScroll(drag.left - distance);
+    }
+    function pointerEnd(event: PointerEvent) {
+      if (!drag || event.pointerId !== drag.id) return;
+      drag = null;
+      cancelAnimationFrame(frame);
+      flushScroll();
+      element!.classList.remove("is-dragging");
+      if (element!.hasPointerCapture(event.pointerId)) element!.releasePointerCapture(event.pointerId);
+    }
+    const preventImageDrag = (event: DragEvent) => event.preventDefault();
+    element.addEventListener("wheel", resetNavigation, { passive: true });
+    element.addEventListener("touchstart", resetNavigation, { passive: true });
+    element.addEventListener("keydown", resetNavigation);
+    element.addEventListener("scrollend", resetNavigation);
+    element.addEventListener("pointerdown", pointerDown);
+    element.addEventListener("pointermove", pointerMove);
+    element.addEventListener("pointerup", pointerEnd);
+    element.addEventListener("pointercancel", pointerEnd);
+    element.addEventListener("lostpointercapture", pointerEnd);
+    element.addEventListener("dragstart", preventImageDrag);
+    return () => {
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      element.classList.remove("is-dragging");
+      resetNavigation();
+      element.removeEventListener("wheel", resetNavigation);
+      element.removeEventListener("touchstart", resetNavigation);
+      element.removeEventListener("keydown", resetNavigation);
+      element.removeEventListener("scrollend", resetNavigation);
+      element.removeEventListener("pointerdown", pointerDown);
+      element.removeEventListener("pointermove", pointerMove);
+      element.removeEventListener("pointerup", pointerEnd);
+      element.removeEventListener("pointercancel", pointerEnd);
+      element.removeEventListener("lostpointercapture", pointerEnd);
+      element.removeEventListener("dragstart", preventImageDrag);
+    };
+  }, [full, status]);
   const filtered = projects.filter(
     (p) =>
       p.status === status &&
@@ -415,7 +502,14 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
   );
   function changeStatus(s: "Completed" | "Ongoing") {
     setStatus(s);
-    track.current?.scrollTo({ left: 0, behavior: "smooth" });
+    track.current?.scrollTo({ left: 0, behavior: "instant" });
+  }
+  function moveProjects(direction: number) {
+    const element = track.current;
+    if (!element) return;
+    navigationTarget.current = scrollProjectTrack(
+      element, direction, navigationTarget.current ?? element.scrollLeft,
+    );
   }
   return (
     <section className="projects-section section-pad" id="projects">
@@ -480,17 +574,13 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
             <div className="project-arrows">
               <button
                 aria-label="Previous projects"
-                onClick={() =>
-                  track.current?.scrollBy({ left: -460, behavior: "smooth" })
-                }
+                onClick={() => moveProjects(-1)}
               >
                 <ArrowLeft size={20} />
               </button>
               <button
                 aria-label="Next projects"
-                onClick={() =>
-                  track.current?.scrollBy({ left: 460, behavior: "smooth" })
-                }
+                onClick={() => moveProjects(1)}
               >
                 <ArrowRight size={20} />
               </button>
@@ -501,6 +591,13 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
       <div
         className={full ? "project-grid container" : "project-track"}
         ref={track}
+        onClickCapture={(event) => {
+          if (!full && dragged.current && event.detail > 0) {
+            event.preventDefault();
+            event.stopPropagation();
+            dragged.current = false;
+          }
+        }}
       >
         {filtered.map((p, i) => (
           <button
@@ -556,7 +653,7 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
         <div className="container project-track-footer">
           <span>EXPLORE THE WORK THAT SHAPES OUR WORLD</span>
           <span>
-            SCROLL TO EXPLORE <ArrowRight size={14} />
+            DRAG OR SWIPE TO EXPLORE <ArrowRight size={14} />
           </span>
         </div>
       )}
@@ -896,77 +993,64 @@ export function StrengthsSection() {
 }
 export function EquipmentSection() {
   const [active, setActive] = useState(0);
-  const root = useRef<HTMLElement>(null);
+  const current = equipment[active];
+  const count = equipment.length;
   return (
-    <section className="equipment-section" id="equipment" ref={root}>
-      <div className="equipment-photo equipment-gallery-photo">
-        <img
-          src={equipment[active].image}
-          alt={`${equipment[active].name}, equipment photograph from the 2026 corporate profile`}
-          key={active}
-          width="1200"
-          height="1000"
-          loading="lazy"
-        />
-        <span>EQUIPMENT BANK / {String(active + 1).padStart(2, "0")} — 12</span>
-        <div className="equipment-photo-label">{equipment[active].name}</div>
-      </div>
-      <div className="equipment-copy">
-        <SectionLabel>BUILT TO DELIVER</SectionLabel>
-        <RevealText as="h2">
-          Our strength.
-          <br />
-          <span className="serif-accent">On the ground.</span>
-        </RevealText>
-        <p>
-          A capable in-house equipment bank. The right tools to turn engineering
-          ambition into on-site progress.
-        </p>
-        <div className="equipment-current" aria-live="polite" key={active}>
-          <span>{String(active + 1).padStart(2, "0")} / 12</span>
-          <RevealText as="h3">{equipment[active].name}</RevealText>
-          <p>{equipment[active].description}</p>
-        </div>
-        <div className="equipment-controls">
-          <button
-            aria-label="Previous equipment"
-            onClick={() => setActive((active + 11) % 12)}
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            {equipment.map((e, i) => (
-              <button
-                key={e.name}
-                aria-label={`View ${e.name}`}
-                aria-pressed={active === i}
-                className={active === i ? "active" : ""}
-                onClick={() => setActive(i)}
-              />
-            ))}
+    <section className="equipment-section fleet-section section-pad" id="equipment" aria-labelledby="fleet-heading">
+      <div className="container">
+        <SectionLabel number="THE EQUIPMENT BANK">BUILT TO DELIVER</SectionLabel>
+        <div className="fleet-heading">
+          <RevealText as="h2" id="fleet-heading">
+            Our strength.<br />
+            <span className="serif-accent">On the ground.</span>
+          </RevealText>
+          <div className="fleet-intro">
+            <span>OWNED CAPABILITY. ON-SITE CONFIDENCE.</span>
+            <p>A capable in-house equipment bank. The right tools to turn engineering ambition into on-site progress.</p>
           </div>
-          <button
-            aria-label="Next equipment"
-            onClick={() => setActive((active + 1) % 12)}
-          >
-            <ArrowRight size={20} />
-          </button>
         </div>
-        <details className="equipment-list">
-          <summary>
-            Explore our complete equipment bank <Plus size={17} />
-          </summary>
-          <ul>
-            {equipment.map((e, i) => (
-              <li key={e.name}>
-                <button onClick={() => setActive(i)}>
-                  {e.name}
-                  <ArrowUpRight size={13} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </details>
+        <div className="fleet-mobile-select">
+          <label htmlFor="fleet-select">EXPLORE OUR EQUIPMENT</label>
+          <select id="fleet-select" value={active} onChange={(event) => setActive(Number(event.target.value))}>
+            {equipment.map((item, i) => <option value={i} key={item.name}>{String(i + 1).padStart(2, "0")} / {item.name}</option>)}
+          </select>
+        </div>
+        <div className="fleet-stage">
+          <figure className="fleet-photo" key={current.image}>
+            <img src={current.image} alt={`${current.name}, equipment photograph from the 2026 corporate profile`} width="1200" height="1000" loading="lazy" />
+            <span className="fleet-photo-tag">R & B INFRA / EQUIPMENT BANK</span>
+          </figure>
+          <div className="fleet-detail">
+            <div className="fleet-detail-copy" key={current.name}>
+              <span className="fleet-eyebrow">IN FOCUS / {String(active + 1).padStart(2, "0")}</span>
+              <Construction size={32} strokeWidth={1.1} aria-hidden="true" />
+              <RevealText as="h3">{current.name}</RevealText>
+              <p>{current.description}</p>
+            </div>
+            <div className="fleet-navigation">
+              <div className="fleet-position" aria-live="polite" aria-atomic="true">
+                <strong>{String(active + 1).padStart(2, "0")}</strong>
+                <span>/ {String(count).padStart(2, "0")}</span>
+                <span className="sr-only"> — {current.name}</span>
+              </div>
+              <div className="fleet-arrows">
+                <button aria-label="Previous equipment" onClick={() => setActive((value) => (value - 1 + count) % count)}><ArrowLeft size={20} /></button>
+                <button aria-label="Next equipment" onClick={() => setActive((value) => (value + 1) % count)}><ArrowRight size={20} /></button>
+              </div>
+            </div>
+            <div className="fleet-progress" aria-hidden="true"><span style={{ width: `${((active + 1) / count) * 100}%` }} /></div>
+          </div>
+        </div>
+        <div className="fleet-index-heading"><span>THE TOOLS BEHIND THE WORK</span><span>{String(count).padStart(2, "0")} EQUIPMENT TYPES</span></div>
+        <div className="fleet-index" role="group" aria-label="Select equipment">
+          {equipment.map((item, i) => (
+            <button key={item.name} aria-label={`View ${item.name}`} aria-pressed={active === i} onClick={() => setActive(i)}>
+              <span>{String(i + 1).padStart(2, "0")}</span>
+              <strong>{item.name}</strong>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );
