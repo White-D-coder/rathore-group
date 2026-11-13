@@ -1,6 +1,6 @@
-# Redesign verification — 13 November 2026
+# Real-footage update verification — 13 November 2026
 
-The homepage was rebuilt around a native-scroll frame sequence. All company records, approved PDF assets, projects, equipment, leadership portraits and certificates are retained.
+The CGI homepage sequence was replaced with 16 seconds of a real, continuous drone flight through a cable-stayed bridge. Frames are extracted directly from licensed Mixkit footage. The background is identified as illustrative footage, and the top label refers to Mumbai headquarters rather than implying the filmed location. All company records, approved PDF assets, projects, equipment, leadership portraits and certificates are retained.
 
 ## Sequence checks
 
@@ -10,6 +10,9 @@ The homepage was rebuilt around a native-scroll frame sequence. All company reco
 - Production Chrome checks pass at 11 forward/reverse scroll positions per device, including the first and last frame.
 - Stopping holds the selected frame. Returning to a prior position produces the same view.
 - Chapter controls, mobile scrubbing and reduced-motion still behavior pass.
+- The final chapter’s continuation link reaches the company overview on desktop and mobile.
+- Native image loading works when `connect-src` is blocked by CSP (the test first confirms fetch is actually blocked).
+- A simulated failed frame automatically retries. Two consecutive failures show a visible error and Retry button; manual recovery draws the exact requested frame while retaining the last good view during the outage.
 - Decoded frame memory is bounded. The hero does not use live WebGL, autoplay or a time-driven camera loop.
 - Actual displayed frames drive chapter copy. Frame URLs include a content fingerprint to avoid stale cached sequences after future revisions.
 
@@ -21,9 +24,9 @@ The production static export succeeds for all generated pages. Project status/se
 
 Desktop and mobile captures of the beginning, three middle chapters and end were reviewed. The old extra pinned capability and equipment sections were removed; the main sequence supplies the continuous pinned journey. Other sections scroll normally.
 
-## Lighthouse
+## Historical Lighthouse measurements
 
-An isolated mobile Lighthouse run against the compressed production preview, with standard simulated mobile throttling:
+The following scores were measured before the real-footage replacement and are retained as historical data, not measurements of the current footage or loader. No new Lighthouse run is claimed. The earlier isolated mobile run used standard simulated mobile throttling:
 
 | Category | Score |
 | --- | ---: |
@@ -39,3 +42,9 @@ Reports and screenshots are local QA artifacts under `/tmp/rathore-redesign`. Th
 ## Content provenance
 
 The primary content source remains the 32-page `RNB CORPORATE PROFILE 2026.pdf`. Actual photographs are used for 15 named projects, three leaders and all 12 equipment types. The Pali rendering and two electrical/solar sector illustrations remain explicitly identified. All 17 documented regions distinguish regional presence from named project status. Six original certificate scans remain available in the lightbox.
+
+## Loading investigation and publication limit
+
+The production Worker error log query returned no events. Anonymous access to the owner-private URL returns 401, so an unauthenticated browser cannot verify the owner’s exact failure. The previous fetch/blob decoding path could silently retain the first frame after errors; the new native image path removes those dependencies and exposes recoverable failures. Local production-browser checks confirm the new behavior under a blocked connection policy and simulated image outages; they do not establish the exact cause of the original report.
+
+All 300 replacement files validate. The optimized footage totals 9.25 MiB desktop and 3.62 MiB mobile, loaded on demand rather than all at startup. `/film` replaces the previous CGI path and each frame URL contains the content fingerprint. The source and license are recorded in `src/data/footage-sources.json`; raw video stays outside the repository.

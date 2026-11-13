@@ -163,6 +163,26 @@ h2 {
     linear-gradient(90deg, #0714206b, transparent 65%),
     linear-gradient(180deg, #06131b8c, transparent 24%);
 }
+.journey-load-status {
+  position: absolute;
+  top: 165px;
+  right: 6%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #071420e8;
+  border: 1px solid #e6d6ad40;
+  color: #f0eee7;
+  font-size: 12px;
+  z-index: 2;
+}
+.journey-load-status button {
+  color: #e6d6ad;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 4px;
+}
 .journey-topline {
   position: absolute;
   top: 127px;

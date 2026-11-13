@@ -1,6 +1,6 @@
 # Rathore Group
 
-A Next.js App Router / TypeScript corporate website with a cinematic, frame-by-frame scroll sequence, original Three.js architecture, an interactive geographic map, and Tailwind CSS. The site exports to static HTML for deployment. It does not replace the company's existing public domain.
+A Next.js App Router / TypeScript corporate website with a cinematic, frame-by-frame scroll sequence, real filmed infrastructure footage, an interactive geographic map, and Tailwind CSS. The site exports to static HTML for deployment. It does not replace the company's existing public domain.
 
 ## Run
 
@@ -17,8 +17,8 @@ For a production-style local preview with compression and caching, build and run
 
 - `src/data/company.ts`: company details, independently editable metrics, all 17 supplied projects and values, capabilities, leadership, companies, equipment, and registrations.
 - `src/components/ScrollJourney.tsx`: native-scroll image-sequence player, five chapters, bounded decoded-frame cache, reverse scrubbing and responsive frames.
-- `qa/sequence/stage.mjs`: original infrastructure geometry, deterministic camera path and floor-by-floor construction.
-- `qa/sequence/render.mjs`: offline renderer using installed Chrome. The main sequence needs no live WebGL at runtime.
+- `qa/sequence/render.mjs` and `extract.py`: extract real footage into optimized WebP frames using ffmpeg and Pillow. The main sequence needs no live WebGL at runtime.
+- `src/data/footage-sources.json`: original clip, license, extraction settings and usage provenance.
 - `qa/sequence/validate.mjs`: validates all 300 frames before each build.
 - `src/components/IndiaMapScene.tsx`: extruded geographic map with scroll-controlled camera framing.
 - `src/data/india.json`: projected Natural Earth map geometry, not a boundary reference.
@@ -28,15 +28,15 @@ For a production-style local preview with compression and caching, build and run
 - `src/app/projects/[slug]/page.tsx`: statically generated project pages.
 - `src/app/globals.css` and `src/app/redesign.css`: editorial design system, responsive layouts and motion preferences.
 
-The crest is the original official artwork, displayed at its original proportions. The sequence is a conceptual architectural study, not a company project. Desktop has 180 rendered frames; mobile has 120. Reduced-motion visitors receive a still image and can explicitly select chapters.
+The crest is the original official artwork, displayed at its original proportions. The sequence is a continuous real drone flight, used as illustrative stock footage rather than a company project. Desktop has 180 photographed frames; mobile has 120. Reduced-motion visitors receive a still image and can explicitly select chapters.
 
 ## Frame-by-frame behavior
 
-Native scroll progress maps directly to `round(progress × (frameCount - 1))`. No autoplay, time-based camera loop or delayed smooth scrolling drives the sequence. Stopping freezes the view; reversing retraces the same source frames. Headings update with the frame that was actually drawn. Only nearby frames are fetched. Decoded memory is capped at 12 desktop frames or 8 mobile frames.
+Native scroll progress maps directly to `round(progress × (frameCount - 1))`. No autoplay, time-based camera loop or delayed smooth scrolling drives the sequence. Stopping freezes the view; reversing retraces the same source frames. Headings update with the frame that was actually drawn. Only nearby frames are loaded using native images, with at most four pending requests. The decoded cache is capped at 12 desktop frames or 8 mobile frames. Loading has a delayed status, an automatic retry, and a manual recovery button; the poster or last good frame stays visible during failures.
 
 The journey uses one sticky viewport. Subsequent company sections scroll normally. The previous extra pinned capability/equipment panels were removed. Project filters and modals, the regional map, actual equipment photographs, portraits, certificates and the enquiry workflow remain functional.
 
-To regenerate the assets, start `node qa/sequence/server.mjs`, then run `node qa/sequence/render.mjs` in another terminal. It writes the desktop/mobile WebP files under `public/sequence`. The renderer uses the frame index as its complete animation state.
+To regenerate the assets, download the licensed original linked in `src/data/footage-sources.json` outside the checkout, then run `node qa/sequence/render.mjs /absolute/path/to/highway.mp4`. Requires ffmpeg and Python Pillow. The extractor writes the desktop/mobile WebP files under `public/film`. The production build validates all frames and fingerprints their contents; the new path also prevents reuse of the replaced CGI assets.
 
 ## Source material and content review
 
@@ -58,6 +58,8 @@ The contact form clearly prepares a local email draft for the visitor to review 
 
 `qa/scroll-journey-check.mjs` checks exact forward/reverse frame indices, stopped playback, equivalent return views, chapter navigation, mobile scrubbing, overflow and reduced motion. Chrome GPU/CPU canvas resampling differs slightly at subpixel edges; the return-view check allows a measured mean difference below 1/255 while requiring the exact frame index.
 
+`qa/frame-loading-check.mjs` checks scrubbing with connections blocked by CSP, automatic retry after an image failure, and explicit recovery after repeated failures.
+
 `qa/browser-check.mjs` checks project filters, modal dismissal, regional selection, enquiry draft generation, mobile navigation and all main mobile routes. Set `RATHORE_BASE_URL` to change its default `http://127.0.0.1:3019`. No check sends an email.
 
 Current verification and lab measurements are recorded in `qa/verification.md`. Previous-design scores are historical and are not measurements of this redesign.
@@ -68,7 +70,7 @@ Current verification and lab measurements are recorded in `qa/verification.md`. 
 - Official company assets: `https://www.rathoregroup.co.in/images/`.
 - Geographic data: [Natural Earth admin-0 1:110m](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson), public domain; simplified regional representation.
 - Manrope and Inter: Google Fonts, self-hosted Latin WOFF2 subsets, SIL Open Font License.
-- Scroll sequence: all 300 frames rendered from the original code in `qa/sequence`. Capability photographs are approved PDF project images.
+- Scroll sequence: [Mixkit — Aerial travel above a highway in the city](https://mixkit.co/free-stock-video/aerial-travel-above-a-highway-in-the-city-41540/), under the [Mixkit Stock Video Free License](https://mixkit.co/license/#videoFree). Real filmed footage; illustrative use only. Source and extraction details are recorded in `src/data/footage-sources.json`. Capability photographs are approved PDF project images.
 
 ## Hosting
 

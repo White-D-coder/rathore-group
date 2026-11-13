@@ -1,5 +1,7 @@
 {
-  "version": "87dd517ee30c",
+  "basePath": "/film",
+  "kind": "real-footage",
+  "version": "d6b1dce7f09d",
   "desktop": {
     "count": 180,
     "width": 1280,

@@ -24,18 +24,18 @@ const chapters = [
   },
   {
     label: "The purpose",
-    eyebrow: "02 / PLACES THAT SERVE PEOPLE",
+    eyebrow: "02 / ENGINEERING WITH PURPOSE",
     first: "BUILT WITH",
     second: "PURPOSE.",
-    text: "Healthcare. Institutions. The foundations of everyday life.",
+    text: "Precision in every detail. People at the heart of every decision.",
     position: "end",
   },
   {
     label: "The future",
-    eyebrow: "03 / WATER, WASTE & RENEWABLES",
+    eyebrow: "03 / QUALITY. SAFETY. RESPONSIBILITY.",
     first: "PROGRESS.",
     second: "WITH RESPONSIBILITY.",
-    text: "Essential systems for a more resilient tomorrow.",
+    text: "Creating lasting value for communities and generations to come.",
     position: "start",
   },
   {
@@ -48,7 +48,7 @@ const chapters = [
   },
 ];
 const stops = [0, 0.245, 0.485, 0.735, 0.955];
-type Decoded = ImageBitmap | HTMLImageElement;
+type LoadState = "ready" | "loading" | "error";
 
 /** A frame is a pure function of native scroll position. No time-based playback. */
 export default function ScrollJourney() {
@@ -57,6 +57,8 @@ export default function ScrollJourney() {
   const jump = useRef<(progress: number) => void>(() => {});
   const [chapter, setChapter] = useState(0);
   const activeChapter = useRef(0);
+  const retry = useRef<() => void>(() => {});
+  const [loadState, setLoadState] = useState<LoadState>("ready");
 
   useEffect(() => {
     const root = section.current;
@@ -69,8 +71,10 @@ export default function ScrollJourney() {
     const count = mobile ? sequence.mobile.count : sequence.desktop.count;
     const variant = mobile ? "mobile" : "desktop";
     const limit = mobile ? 8 : 12;
-    const cache = new Map<number, Decoded>();
-    const pending = new Map<number, AbortController>();
+    const cache = new Map<number, HTMLImageElement>();
+    const pending = new Map<number, () => void>();
+    const attempts = new Map<number, number>();
+    let statusTimer: ReturnType<typeof setTimeout> | undefined;
     let queue: number[] = [];
     let wanted = 0;
     let lastDrawn = -1;
@@ -81,17 +85,22 @@ export default function ScrollJourney() {
     root.dataset.sequenceVariant = variant;
     root.dataset.frameCount = String(count);
 
-    function release(image: Decoded) {
-      if ("close" in image) image.close();
+    function status(value: LoadState) {
+      root!.dataset.loadState = value;
+      setLoadState(value);
+    }
+    function waitForFrame() {
+      clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => {
+        if (wanted !== lastDrawn) status("loading");
+      }, 450);
     }
     function draw(index: number) {
       if (!context || !element) return;
       const image = cache.get(index);
       if (!image) return;
-      const width =
-        image instanceof HTMLImageElement ? image.naturalWidth : image.width;
-      const height =
-        image instanceof HTMLImageElement ? image.naturalHeight : image.height;
+      const width = image.naturalWidth;
+      const height = image.naturalHeight;
       const scale = Math.max(element.width / width, element.height / height);
       context.drawImage(
         image,
@@ -101,6 +110,10 @@ export default function ScrollJourney() {
         height * scale,
       );
       lastDrawn = index;
+      if (index === wanted) {
+        clearTimeout(statusTimer);
+        status("ready");
+      }
       const p = index / (count - 1);
       const next =
         p < 0.21 ? 0 : p < 0.445 ? 1 : p < 0.685 ? 2 : p < 0.925 ? 3 : 4;
@@ -114,83 +127,90 @@ export default function ScrollJourney() {
       cache.delete(index);
       cache.set(index, image);
     }
-    async function decode(blob: Blob): Promise<Decoded> {
-      if (typeof createImageBitmap === "function")
-        return createImageBitmap(blob);
-      return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(blob);
-        const image = new Image();
-        image.onload = () => {
-          URL.revokeObjectURL(url);
-          resolve(image);
-        };
-        image.onerror = () => {
-          URL.revokeObjectURL(url);
-          reject(Error("Frame decode failed"));
-        };
-        image.src = url;
-      });
-    }
     function pump() {
       if (destroyed) return;
       while (pending.size < 4 && queue.length) {
         const index = queue.shift()!;
         if (cache.has(index) || pending.has(index)) continue;
-        const controller = new AbortController();
-        pending.set(index, controller);
-        fetch(`/sequence/${variant}/${String(index).padStart(3, "0")}.webp?v=${sequence.version}`, {
-          signal: controller.signal,
-          cache: "force-cache",
-        })
-          .then((response) => {
-            if (!response.ok) throw Error(`Frame ${index} unavailable`);
-            return response.blob();
-          })
-          .then(decode)
-          .then((image) => {
-            if (destroyed) {
-              release(image);
-              return;
-            }
+        if ((attempts.get(index) || 0) >= 2) {
+          if (index === wanted) {
+            clearTimeout(statusTimer);
+            status("error");
+          }
+          continue;
+        }
+        const attempt = (attempts.get(index) || 0) + 1;
+        attempts.set(index, attempt);
+        // Native images use the same loading path as the visible poster. No fetch,
+        // blob URLs, createImageBitmap, or connection-policy dependency is needed.
+        const image = new Image();
+        image.decoding = "async";
+        image.fetchPriority = index === wanted ? "high" : "low";
+        let timer: ReturnType<typeof setTimeout>;
+        const cancel = () => {
+          clearTimeout(timer);
+          image.onload = null;
+          image.onerror = null;
+          image.removeAttribute("src");
+          attempts.set(index, attempt - 1);
+        };
+        const finish = (success: boolean) => {
+          clearTimeout(timer);
+          image.onload = null;
+          image.onerror = null;
+          if (destroyed || pending.get(index) !== cancel) return;
+          pending.delete(index);
+          if (success && image.naturalWidth > 0) {
             cache.set(index, image);
+            attempts.delete(index);
             if (index === wanted) draw(index);
             while (cache.size > limit) {
-              const oldest = [...cache.keys()].find(
-                (key) => key !== wanted && key !== lastDrawn,
-              );
+              const oldest = [...cache.keys()].find(key => key !== wanted && key !== lastDrawn);
               if (oldest === undefined) break;
-              release(cache.get(oldest)!);
               cache.delete(oldest);
             }
-          })
-          .catch(() => {
-            /* The visible poster/last good frame remains on network failure. */
-          })
-          .finally(() => {
-            if (pending.get(index) === controller) pending.delete(index);
-            pump();
-          });
+          } else if (index === wanted) {
+            if (attempt < 2) queue.unshift(index);
+            else {
+              clearTimeout(statusTimer);
+              status("error");
+            }
+          }
+          pump();
+        };
+        image.onload = () => finish(true);
+        image.onerror = () => finish(false);
+        pending.set(index, cancel);
+        timer = setTimeout(() => finish(false), 8000);
+        image.src = `${sequence.basePath}/${variant}/${String(index).padStart(3, "0")}.webp?v=${sequence.version}${attempt > 1 ? `&retry=${attempt}` : ""}`;
       }
     }
     function request(index: number) {
+      const changed = wanted !== index;
       wanted = index;
       root!.dataset.requestedFrame = String(index);
+      if (changed || index === lastDrawn) {
+        clearTimeout(statusTimer);
+        status("ready");
+      }
       if (index !== lastDrawn && cache.has(index)) draw(index);
-      queue = [
-        index,
-        index + 1,
-        index - 1,
-        index + 2,
-        index - 2,
-        index + 3,
-      ].filter((n) => n >= 0 && n < count && !cache.has(n) && !pending.has(n));
-      for (const [n, controller] of pending)
+      for (const [n, cancel] of pending) {
         if (Math.abs(n - index) > 8) {
-          controller.abort();
           pending.delete(n);
+          cancel();
         }
+      }
+      queue = [index, index + 1, index - 1, index + 2, index - 2, index + 3]
+        .filter(n => n >= 0 && n < count && !cache.has(n) && !pending.has(n));
+      if (lastDrawn !== index && (changed || !statusTimer)) waitForFrame();
       pump();
     }
+    retry.current = () => {
+      attempts.delete(wanted);
+      status("loading");
+      waitForFrame();
+      request(wanted);
+    };
     function update() {
       frameRequest = 0;
       if (destroyed || !root) return;
@@ -244,9 +264,11 @@ export default function ScrollJourney() {
       observer.disconnect();
       removeEventListener("scroll", scroll);
       removeEventListener("resize", resize);
-      for (const controller of pending.values()) controller.abort();
-      for (const image of cache.values()) release(image);
+      clearTimeout(statusTimer);
+      for (const cancel of pending.values()) cancel();
+      pending.clear();
       cache.clear();
+      retry.current = () => {};
     };
   }, []);
 
@@ -262,11 +284,11 @@ export default function ScrollJourney() {
         <picture className="journey-poster">
           <source
             media="(max-width: 700px)"
-            srcSet={`/sequence/mobile/000.webp?v=${sequence.version}`}
+            srcSet={`${sequence.basePath}/mobile/000.webp?v=${sequence.version}`}
           />
           <img
-            src={`/sequence/desktop/000.webp?v=${sequence.version}`}
-            alt="Conceptual architectural view of a cable-stayed bridge and infrastructure district"
+            src={`${sequence.basePath}/desktop/000.webp?v=${sequence.version}`}
+            alt="Real aerial footage approaching a cable-stayed bridge at dusk; illustrative infrastructure footage"
             width="1440"
             height="900"
             fetchPriority="high"
@@ -274,10 +296,16 @@ export default function ScrollJourney() {
         </picture>
         <canvas ref={canvas} className="journey-canvas" aria-hidden="true" />
         <div className="journey-shade" />
+        {loadState !== "ready" && (
+          <div className="journey-load-status" role="status" aria-live="polite">
+            <span>{loadState === "error" ? "This scene could not load." : "Loading scene…"}</span>
+            {loadState === "error" && <button onClick={() => retry.current()}>Retry</button>}
+          </div>
+        )}
         <div className="journey-topline">
           <span>R & B INFRA PROJECT LIMITED</span>
           <span>
-            MUMBAI, INDIA <i />
+            MUMBAI HEADQUARTERS <i />
           </span>
         </div>
         <div className={`journey-copy journey-copy-${current.position}`}>
@@ -320,18 +348,27 @@ export default function ScrollJourney() {
           ))}
         </nav>
         <div className="journey-bottom">
-          <button
-            className="journey-scroll"
-            onClick={() => jump.current(stops[Math.min(chapter + 1, 4)])}
-          >
-            <span>
-              <ArrowDown size={17} />
-            </span>
-            {chapter === 4 ? "THE JOURNEY CONTINUES" : "SCROLL TO EXPLORE"}
-          </button>
+          {chapter === chapters.length - 1 ? (
+            <a
+              className="journey-scroll"
+              href="#at-a-glance"
+              aria-label="Continue to company overview"
+            >
+              <span><ArrowDown size={17} /></span>
+              THE JOURNEY CONTINUES
+            </a>
+          ) : (
+            <button
+              className="journey-scroll"
+              onClick={() => jump.current(stops[chapter + 1])}
+            >
+              <span><ArrowDown size={17} /></span>
+              SCROLL TO EXPLORE
+            </button>
+          )}
           <span className="journey-current">{current.label}</span>
           <span className="journey-visual-note">
-            CONCEPTUAL ARCHITECTURAL SEQUENCE
+            ILLUSTRATIVE INFRASTRUCTURE FOOTAGE
           </span>
         </div>
         <div className="journey-progress">

@@ -95,6 +95,16 @@ for (const variant of [
       await page.screenshot({
         path: `/tmp/rathore-redesign/${variant.name}-frame-${expected}.png`,
       });
+    if (p === 1) {
+      await page.getByRole("link", { name: "Continue to company overview" }).click();
+      await page.waitForFunction(() => {
+        const rect = document.querySelector("#at-a-glance")?.getBoundingClientRect();
+        return !!rect && rect.top >= -1 && rect.top <= 150;
+      });
+      if (!page.url().endsWith("#at-a-glance"))
+        throw Error(`${variant.name}: final chapter did not continue to the overview`);
+      console.log("PASS", variant.name, "final chapter continues to company overview");
+    }
   }
   if (new Set([...hashes.values()].map((s) => s.hash)).size < 7)
     throw Error("The sequence does not contain enough distinct images");

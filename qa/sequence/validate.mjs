@@ -2,12 +2,12 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 const fingerprint=createHash('sha256');
-const manifest={version:'',desktop:{count:180,width:1280,height:800},mobile:{count:120,width:600,height:900}};
+const manifest={basePath:'/film',kind:'real-footage',version:'',desktop:{count:180,width:1280,height:800},mobile:{count:120,width:600,height:900}};
 for (const [variant, count, width, height] of [
   ["desktop", 180, 1280, 800],
   ["mobile", 120, 600, 900],
 ]) {
-  const folder = path.resolve("public/sequence", variant);
+  const folder = path.resolve("public/film", variant);
   const files = (await readdir(folder)).filter((n) => n.endsWith(".webp"));
   if (files.length !== count)
     throw Error(
