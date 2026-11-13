@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
 import { ArrowUpRight, X, Plus, Minus, Download } from "lucide-react";
+import RevealText from "./RevealText";
 const certificates = [
   {
     file: "cmmi-level3",
@@ -48,7 +49,7 @@ export default function CredentialsGallery() {
     <div className="credentials">
       <div className="credentials-heading">
         <span className="eyebrow">STANDARDS BEHIND OUR WORK</span>
-        <h3>Credentials, in detail.</h3>
+        <RevealText as="h3">Credentials, in detail.</RevealText>
         <p>
           Original documents from our 2026 corporate profile. Select a
           certificate to inspect the source scan.

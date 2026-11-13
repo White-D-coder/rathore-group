@@ -1,12 +1,14 @@
 {
   "kind": "real filmed stock footage",
-  "title": "Aerial travel above a highway in the city",
-  "provider": "Mixkit",
-  "sourcePage": "https://mixkit.co/free-stock-video/aerial-travel-above-a-highway-in-the-city-41540/",
-  "originalDownload": "https://assets.mixkit.co/videos/41540/41540-1080.mp4",
-  "license": "Mixkit Stock Video Free License",
-  "licenseUrl": "https://mixkit.co/license/#videoFree",
+  "title": "Aerial View of City Skyline with Bridge and River",
+  "creator": "耀明 钟",
+  "provider": "Pexels",
+  "sourcePage": "https://www.pexels.com/video/aerial-view-of-city-skyline-with-bridge-and-river-31198061/",
+  "originalDownload": "https://videos.pexels.com/video-files/31198061/13326016_3848_2160_25fps.mp4",
+  "originalDimensions": [3848, 2160],
+  "license": "Pexels License",
+  "licenseUrl": "https://www.pexels.com/license/",
   "verifiedOn": "2026-11-13",
   "usage": "Illustrative cinematic homepage background; does not depict a Rathore Group project.",
-  "extraction": { "startSeconds": 0.5, "durationSeconds": 16, "desktopFrames": 180, "mobileFrames": 120 }
+  "extraction": { "startSeconds": 0.25, "durationSeconds": 10, "desktopFrames": 180, "retinaFrames": 180, "mobileFrames": 120, "webpQuality": 86 }
 }

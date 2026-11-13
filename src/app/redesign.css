@@ -86,7 +86,7 @@ h2 {
 .navbar {
   height: 90px;
   background: linear-gradient(#07121dd9, transparent);
-  border-bottom: 1px solid #ffffff20;
+  border-bottom: 0;
 }
 .navbar-scrolled {
   height: 72px;
@@ -106,7 +106,7 @@ h2 {
 }
 .nav-cta {
   border: 0;
-  border-bottom: 1px solid #c9a34a90;
+  border-bottom: 0;
   padding: 8px 0;
   min-height: 35px;
   font-size: 10px;

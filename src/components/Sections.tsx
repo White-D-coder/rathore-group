@@ -25,6 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import CredentialsGallery from "./CredentialsGallery";
+import RevealText from "./RevealText";
 import {
   capabilities,
   projects,
@@ -65,14 +66,14 @@ export function AboutSection({ full = false }: { full?: boolean }) {
           THE RATHORE STORY
         </SectionLabel>
         <div className="about-layout">
-          <div className="about-copy" data-reveal>
-            <h2>
+          <div className="about-copy">
+            <RevealText as="h2">
               Three decades of
               <br />
               engineering
               <br />
               <span className="serif-accent">excellence.</span>
-            </h2>
+            </RevealText>
             <p className="lead-text">
               Built with purpose.
               <br />
@@ -94,7 +95,7 @@ export function AboutSection({ full = false }: { full?: boolean }) {
               </Link>
             )}
           </div>
-          <div className="about-image" data-reveal>
+          <div className="about-image">
             <img
               src="/images/projects/sirohi-medical-college.webp"
               alt="Medical College at Sirohi, photograph from the 2026 corporate profile"
@@ -124,10 +125,10 @@ export function AboutSection({ full = false }: { full?: boolean }) {
         <div className="vision-mission">
           <div>
             <span>01 / OUR VISION</span>
-            <h3>
+            <RevealText as="h3">
               A larger vision.
               <br />A lasting difference.
-            </h3>
+            </RevealText>
             <p>
               To become a preeminent Indian conglomerate across infrastructure,
               civil construction, solid waste management, storm water drainage
@@ -136,11 +137,11 @@ export function AboutSection({ full = false }: { full?: boolean }) {
           </div>
           <div>
             <span>02 / OUR MISSION</span>
-            <h3>
+            <RevealText as="h3">
               Quality in every detail.
               <br />
               Purpose in every project.
-            </h3>
+            </RevealText>
             <p>
               To deliver quality services, maintain efficiency and establish a
               strong presence across the globe.
@@ -195,17 +196,18 @@ export function CapabilitiesSection({ full = false }: { full?: boolean }) {
       <div className="container">
         <SectionLabel number="02 / THE EXPERTISE">WHAT WE BUILD</SectionLabel>
         <div className="section-heading-row">
-          <h2>
+          <RevealText as="h2">
             Essential infrastructure.
             <br />
             <span className="muted">Extraordinary possibilities.</span>
-          </h2>
+          </RevealText>
           <p>
             Four core capabilities.
             <br />
             One commitment to a better tomorrow.
           </p>
         </div>
+        <div className="capability-stage">
         <div
           className="capability-tabs"
           role="tablist"
@@ -236,7 +238,7 @@ export function CapabilitiesSection({ full = false }: { full?: boolean }) {
             <span className="eyebrow">
               {c.number} / {c.title}
             </span>
-            <h3>{c.subtitle}</h3>
+            <RevealText as="h3">{c.subtitle}</RevealText>
             <p>{c.description}</p>
             <ul>
               {c.items.map((t) => (
@@ -254,7 +256,7 @@ export function CapabilitiesSection({ full = false }: { full?: boolean }) {
               <ArrowUpRight size={18} />
             </Link>
           </div>
-          <div className="capability-visual">
+          <div className="capability-visual" key={`image-${c.id}`}>
             <div className="technical-cross cross-tl" />
             <div className="technical-cross cross-br" />
             <img
@@ -289,9 +291,10 @@ export function CapabilitiesSection({ full = false }: { full?: boolean }) {
                 ][active]
               }
             </span>
-            <span className="model-note">CONCEPTUAL 3D VISUALIZATION</span>
+
             <div className="model-orbit" />
           </div>
+        </div>
         </div>
         {full && (
           <div className="capability-all">
@@ -301,7 +304,7 @@ export function CapabilitiesSection({ full = false }: { full?: boolean }) {
                 <article id={c.id} key={c.id}>
                   <Icon size={27} />
                   <span>{c.number}</span>
-                  <h3>{c.title}</h3>
+                  <RevealText as="h3">{c.title}</RevealText>
                   <p>{c.description}</p>
                   <ul>
                     {c.items.map((item) => (
@@ -373,7 +376,7 @@ function ProjectDialog({
             <span className="eyebrow">
               {project.status} / {project.category}
             </span>
-            <h2 id="project-dialog-title">{project.title}</h2>
+            <RevealText as="h2" id="project-dialog-title">{project.title}</RevealText>
             <p>
               <MapPin size={15} />
               {project.location}
@@ -421,11 +424,11 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
           SELECTED WORK
         </SectionLabel>
         <div className="section-heading-row">
-          <h2>
+          <RevealText as="h2">
             Engineering
             <br />
             <span className="serif-accent">what matters.</span>
-          </h2>
+          </RevealText>
           <div>
             <p>
               From critical public infrastructure to urban development,
@@ -538,7 +541,7 @@ export function ProjectShowcase({ full = false }: { full?: boolean }) {
               <span>{p.category}</span>
               <span>{String(i + 1).padStart(2, "0")}</span>
             </div>
-            <h3>{p.title}</h3>
+            <RevealText as="h3">{p.title}</RevealText>
             <div className="project-card-bottom">
               <span>
                 <MapPin size={12} />
@@ -678,11 +681,12 @@ export function PresenceSection() {
         </SectionLabel>
         <div className="presence-layout">
           <div className="presence-copy">
-            <h2>
+            <span className="presence-index" aria-label="17 documented regions">17<span>REGIONS. ONE SHARED AMBITION.</span></span>
+            <RevealText as="h2">
               Many landscapes.
               <br />
               <span className="muted">One purpose.</span>
-            </h2>
+            </RevealText>
             <p>
               From growing cities to demanding terrain, we bring engineering
               expertise where it matters.
@@ -702,12 +706,12 @@ export function PresenceSection() {
                 </button>
               ))}
             </div>
-            <div className="region-detail" aria-live="polite">
+            <div className="region-detail" aria-live="polite" key={region.name}>
               <span className="eyebrow">
                 <MapPin size={13} />
                 {region.name}
               </span>
-              <h3>{region.caption}</h3>
+              <RevealText as="h3">{region.caption}</RevealText>
               {list.length === 0 && (
                 <p className="profile-presence-note">
                   The corporate profile records our presence in this region.
@@ -868,19 +872,19 @@ export function StrengthsSection() {
       <div className="container">
         <SectionLabel>THE WAY WE BUILD</SectionLabel>
         <div className="section-heading-row">
-          <h2>
+          <RevealText as="h2">
             The foundation of
             <br />
             <span className="muted">execution excellence.</span>
-          </h2>
+          </RevealText>
           <span className="eyebrow">BUILT INTO EVERYTHING WE DO</span>
         </div>
         <div className="strengths-grid">
           {strengths.map((s, i) => (
-            <article key={s.title} data-reveal>
+            <article key={s.title}>
               <span className="strength-number">0{i + 1}</span>
               <s.icon size={37} strokeWidth={1} />
-              <h3>{s.title}</h3>
+              <RevealText as="h3">{s.title}</RevealText>
               <p>{s.text}</p>
               <span className="strength-line" />
             </article>
@@ -909,18 +913,18 @@ export function EquipmentSection() {
       </div>
       <div className="equipment-copy">
         <SectionLabel>BUILT TO DELIVER</SectionLabel>
-        <h2>
+        <RevealText as="h2">
           Our strength.
           <br />
           <span className="serif-accent">On the ground.</span>
-        </h2>
+        </RevealText>
         <p>
           A capable in-house equipment bank. The right tools to turn engineering
           ambition into on-site progress.
         </p>
         <div className="equipment-current" aria-live="polite" key={active}>
           <span>{String(active + 1).padStart(2, "0")} / 12</span>
-          <h3>{equipment[active].name}</h3>
+          <RevealText as="h3">{equipment[active].name}</RevealText>
           <p>{equipment[active].description}</p>
         </div>
         <div className="equipment-controls">
@@ -975,11 +979,11 @@ export function LeadershipSection({ full = false }: { full?: boolean }) {
           OUR LEADERSHIP
         </SectionLabel>
         <div className="section-heading-row">
-          <h2>
+          <RevealText as="h2">
             Leadership that builds
             <br />
             <span className="serif-accent">the future.</span>
-          </h2>
+          </RevealText>
           {!full && (
             <Link href="/leadership/" className="underlined-link">
               Meet our leadership <ArrowUpRight size={17} />
@@ -988,7 +992,7 @@ export function LeadershipSection({ full = false }: { full?: boolean }) {
         </div>
         <div className="leadership-portraits">
           {leadership.map((leader, i) => (
-            <article key={leader.name} data-reveal>
+            <article key={leader.name}>
               <div className="leader-portrait">
                 <img
                   src={leader.photo}
@@ -999,7 +1003,7 @@ export function LeadershipSection({ full = false }: { full?: boolean }) {
                 />
                 <span>0{i + 1} / LEADERSHIP</span>
               </div>
-              <h3>{leader.name}</h3>
+              <RevealText as="h3">{leader.name}</RevealText>
               <span className="leader-role">{leader.role}</span>
               {full && <p>{leader.note}</p>}
             </article>
@@ -1015,11 +1019,11 @@ export function GroupSection() {
       <div className="container">
         <SectionLabel>THE RATHORE ECOSYSTEM</SectionLabel>
         <div className="group-layout">
-          <h2>
+          <RevealText as="h2">
             One vision.
             <br />
             <span className="muted">Many possibilities.</span>
-          </h2>
+          </RevealText>
           <p>
             A connected group of companies working across infrastructure,
             environmental services and energy.
@@ -1029,7 +1033,7 @@ export function GroupSection() {
           {groupCompanies.map((name, i) => (
             <div key={name}>
               <span>0{i + 1}</span>
-              <h3>{name}</h3>
+              <RevealText as="h3">{name}</RevealText>
               <div className="ecosystem-node" />
             </div>
           ))}
@@ -1055,11 +1059,11 @@ export function TrustSection() {
       <div className="container">
         <SectionLabel>INSTITUTIONAL TRUST</SectionLabel>
         <div className="section-heading-row">
-          <h2>
+          <RevealText as="h2">
             Trusted to build
             <br />
             public value.
-          </h2>
+          </RevealText>
           <p>
             Working with public institutions
             <br />
@@ -1114,11 +1118,11 @@ export function ResponsibilitySection() {
         <SectionLabel>RESPONSIBILITY, BY DESIGN</SectionLabel>
         <div className="responsibility-layout">
           <div>
-            <h2>
+            <RevealText as="h2">
               A stronger tomorrow.
               <br />
               <span className="serif-accent">Starts with care.</span>
-            </h2>
+            </RevealText>
             <p>
               Our responsibilities extend beyond the structures we build—to our
               people, our communities and the environment.
@@ -1130,7 +1134,7 @@ export function ResponsibilitySection() {
           <div className="responsibility-values">
             <div>
               <ShieldCheck size={25} strokeWidth={1.3} />
-              <h3>Safety. At every step.</h3>
+              <RevealText as="h3">Safety. At every step.</RevealText>
               <p>
                 Risk assessment, a commitment to safe working, incident
                 reporting and investigation, and ongoing safety training and
@@ -1139,7 +1143,7 @@ export function ResponsibilitySection() {
             </div>
             <div>
               <Recycle size={25} strokeWidth={1.3} />
-              <h3>Progress. With purpose.</h3>
+              <RevealText as="h3">Progress. With purpose.</RevealText>
               <p>
                 Community development, environmental stewardship, employee
                 well-being, ethical governance and sustainable growth.
@@ -1164,11 +1168,11 @@ export function FinalCTA() {
       <div className="final-cta-shade" />
       <div className="container">
         <span className="eyebrow">YOUR VISION. OUR COMMITMENT.</span>
-        <h2>
+        <RevealText as="h2">
           Let’s build
           <br />
           <span className="serif-accent">what matters.</span>
-        </h2>
+        </RevealText>
         <div>
           <p>
             Have an infrastructure project or partnership in mind?

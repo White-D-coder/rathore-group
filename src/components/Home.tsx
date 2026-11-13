@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import ScrollJourney from "./ScrollJourney";
+import RevealText from "./RevealText";
 import { company } from "@/data/company";
 import {
   AboutSection,
@@ -42,6 +43,7 @@ export function Stats() {
         <span className="eyebrow">A LEGACY, MEASURED IN IMPACT</span>
         <span>THREE DECADES. ONE COMMITMENT.</span>
       </div>
+      <div className="stats-intro"><RevealText>A legacy.<br /><span className="serif-accent">Measured in impact.</span></RevealText><p>Engineering progress since 1994.</p></div>
       <div className="stats-grid">
         {company.metrics.map((m) => (
           <div className="stat" key={m.label}>

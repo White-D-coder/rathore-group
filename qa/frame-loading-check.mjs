@@ -20,7 +20,7 @@ try {
   await strict.goto(base, { waitUntil: 'networkidle' });
   await frame(strict, 0);
   const blocked = await strict.evaluate(async () => {
-    try { await fetch('/film/desktop/087.webp'); return false; } catch { return true; }
+    try { await fetch('/film-hq/desktop/087.webp'); return false; } catch { return true; }
   });
   assert.equal(blocked, true, 'Test must actually block fetch connections');
   await seek(strict, 87);
@@ -30,7 +30,7 @@ try {
 
   const automatic = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   let failedOnce = false;
-  await automatic.route('**/film/desktop/087.webp?*', async route => {
+  await automatic.route('**/film-hq/desktop/087.webp?*', async route => {
     if (!failedOnce) {
       failedOnce = true;
       await route.fulfill({ status: 503, body: 'Temporary frame failure', headers: { 'cache-control': 'no-store' } });
@@ -47,7 +47,7 @@ try {
   const recovery = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   let failing = true;
   let failures = 0;
-  await recovery.route('**/film/desktop/087.webp?*', async route => {
+  await recovery.route('**/film-hq/desktop/087.webp?*', async route => {
     if (failing) {
       failures++;
       await route.fulfill({ status: 503, body: 'Frame unavailable', headers: { 'cache-control': 'no-store' } });

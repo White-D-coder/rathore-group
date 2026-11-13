@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, ArrowUp, Menu, X } from "lucide-react";
 import { company } from "@/data/company";
 import { usePathname } from "next/navigation";
+import RevealText from "./RevealText";
 
 export function Logo({ small = false }: { small?: boolean }) {
   return (
@@ -214,7 +215,7 @@ export function PageHeading({
           <span className="gold-line" />
           {label}
         </span>
-        <h1>{title}</h1>
+        <RevealText as="h1">{title}</RevealText>
         <p>{description}</p>
       </div>
       <div className="heading-grid" />

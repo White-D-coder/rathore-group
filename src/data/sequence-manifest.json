@@ -1,15 +1,20 @@
 {
-  "basePath": "/film",
+  "basePath": "/film-hq",
   "kind": "real-footage",
-  "version": "d6b1dce7f09d",
+  "version": "396981a5272c",
   "desktop": {
     "count": 180,
-    "width": 1280,
-    "height": 800
+    "width": 1920,
+    "height": 1080
+  },
+  "retina": {
+    "count": 180,
+    "width": 3840,
+    "height": 2160
   },
   "mobile": {
     "count": 120,
-    "width": 600,
-    "height": 900
+    "width": 1080,
+    "height": 1920
   }
 }

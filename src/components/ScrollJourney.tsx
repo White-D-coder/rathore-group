@@ -68,9 +68,11 @@ export default function ScrollJourney() {
     if (!context) return;
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobile = matchMedia("(max-width: 700px)").matches;
-    const count = mobile ? sequence.mobile.count : sequence.desktop.count;
-    const variant = mobile ? "mobile" : "desktop";
-    const limit = mobile ? 8 : 12;
+    const retina = !mobile && matchMedia("(min-resolution: 1.5dppx), (min-width: 1921px)").matches;
+    const variant = mobile ? "mobile" : retina ? "retina" : "desktop";
+    const count = sequence[variant].count;
+    const limit = mobile ? 3 : retina ? 2 : 8;
+    const concurrency = mobile || retina ? 2 : 4;
     const cache = new Map<number, HTMLImageElement>();
     const pending = new Map<number, () => void>();
     const attempts = new Map<number, number>();
@@ -129,7 +131,7 @@ export default function ScrollJourney() {
     }
     function pump() {
       if (destroyed) return;
-      while (pending.size < 4 && queue.length) {
+      while (pending.size < concurrency && queue.length) {
         const index = queue.shift()!;
         if (cache.has(index) || pending.has(index)) continue;
         if ((attempts.get(index) || 0) >= 2) {
@@ -233,9 +235,13 @@ export default function ScrollJourney() {
       if (rect.width === boxWidth && rect.height === boxHeight) return;
       boxWidth = rect.width;
       boxHeight = rect.height;
-      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      const dpr = Math.min(devicePixelRatio || 1, 2);
       element.width = Math.round(rect.width * dpr);
       element.height = Math.round(rect.height * dpr);
+      if (context) {
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+      }
       if (lastDrawn >= 0) draw(lastDrawn);
       scroll();
     }
@@ -286,11 +292,15 @@ export default function ScrollJourney() {
             media="(max-width: 700px)"
             srcSet={`${sequence.basePath}/mobile/000.webp?v=${sequence.version}`}
           />
+          <source
+            media="(min-resolution: 1.5dppx), (min-width: 1921px)"
+            srcSet={`${sequence.basePath}/retina/000.webp?v=${sequence.version}`}
+          />
           <img
             src={`${sequence.basePath}/desktop/000.webp?v=${sequence.version}`}
-            alt="Real aerial footage approaching a cable-stayed bridge at dusk; illustrative infrastructure footage"
-            width="1440"
-            height="900"
+            alt="Real aerial footage of a river bridge and city skyline; illustrative infrastructure footage"
+            width="1920"
+            height="1080"
             fetchPriority="high"
           />
         </picture>
@@ -308,7 +318,7 @@ export default function ScrollJourney() {
             MUMBAI HEADQUARTERS <i />
           </span>
         </div>
-        <div className={`journey-copy journey-copy-${current.position}`}>
+        <div className={`journey-copy journey-copy-${current.position}`} key={chapter}>
           <span className="journey-eyebrow">
             <i />
             {current.eyebrow}
