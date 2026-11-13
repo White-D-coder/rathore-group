@@ -13,6 +13,8 @@ Build with `npm run build`. The deployment output is `out/`. `npm run typecheck`
 
 For a production-style local preview with compression and caching, build and run `node qa/preview-server.mjs`, then open `http://127.0.0.1:3019`.
 
+The development server uses `.next-dev/`; production builds use `.next/`. This lets a local server stay open during a production build without mixing development and production chunks. If an older server is already running after this configuration changes, restart it once with `npm run dev`. Tailwind and its PostCSS plugin are pinned together at 4.1.18 to keep their compiler compatible with this Node 22 development environment; update them together and check both `dev` and `build`.
+
 ## Content and structure
 
 - `src/data/company.ts`: company details, independently editable metrics, all 17 supplied projects and values, capabilities, leadership, companies, equipment, and registrations.

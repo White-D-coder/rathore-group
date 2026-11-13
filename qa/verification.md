@@ -48,3 +48,11 @@ The primary content source remains the 32-page `RNB CORPORATE PROFILE 2026.pdf`.
 The production Worker error log query returned no events. Anonymous access to the owner-private URL returns 401, so an unauthenticated browser cannot verify the owner’s exact failure. The previous fetch/blob decoding path could silently retain the first frame after errors; the new native image path removes those dependencies and exposes recoverable failures. Local production-browser checks confirm the new behavior under a blocked connection policy and simulated image outages; they do not establish the exact cause of the original report.
 
 All 300 replacement files validate. The optimized footage totals 9.25 MiB desktop and 3.62 MiB mobile, loaded on demand rather than all at startup. `/film` replaces the previous CGI path and each frame URL contains the content fingerprint. The source and license are recorded in `src/data/footage-sources.json`; raw video stays outside the repository.
+
+## Local HTTP 500 repair
+
+A direct request to the existing local Next.js development server on port 3000 reproduced HTTP 500. Loading its compiled homepage module failed with `Cannot find module './770.js'`: the active development runtime and production page chunks had been mixed in `.next/`. Development now uses `.next-dev/` and production retains `.next/`; the development directory is ignored and its generated types are included.
+
+A fresh development process additionally exposed `ERR_REQUIRE_ESM` from the Tailwind 4.3.5 compiler requiring the ESM-only `magic-string` 1.4.5. Tailwind and its PostCSS plugin are pinned together to 4.1.18, which uses the compatible `magic-string` 0.30.21. Dependencies were reinstalled from the updated lockfile.
+
+The homepage, a project detail page and the first film frame returned HTTP 200 after the repair. A production build completed all 30 pages while the development server stayed running, and the homepage still returned HTTP 200 afterward. Local Chrome regression checks passed for portfolio filtering, modals, regional selection, enquiry drafts, mobile navigation and all seven main mobile routes, with no browser errors or failed asset requests.
