@@ -36,11 +36,11 @@ The crest is the original official artwork, displayed at its original proportion
 
 ## Frame-by-frame behavior
 
-Native scroll progress maps directly to `round(progress × (frameCount - 1))`. No autoplay, time-based camera loop or delayed smooth scrolling drives the sequence. Stopping freezes the view; reversing retraces the same source frames. Headings update with the frame that was actually drawn. Only nearby frames are loaded using native images, with four pending requests on standard desktops and two on Retina/mobile. The decoded cache is capped at eight Full HD frames, two 4K Retina frames or three mobile frames. Canvas resolution follows device pixel ratio up to 2, with high-quality resampling. Loading has a delayed status, an automatic retry, and a manual recovery button; the poster or last good frame stays visible during failures.
+Native scroll progress maps to `round(progress × (frameCount - 1))`. A single lightweight sprite sheet keeps the flight moving while scrolling, including on high-latency connections. After a 120ms pause, the exact Full HD, 4K Retina or portrait frame replaces the preview. No autoplay or delayed page scrolling drives the sequence. Reversing retraces the same flight; headings follow the displayed frame. The full-quality decoded cache is capped at eight Full HD frames, two 4K Retina frames or three mobile frames, plus one preview sheet. Canvas resolution follows device pixel ratio up to 2. Native image loading supports strict connection policies, automatic retry and manual recovery; the matching preview remains visible if a full-quality request fails.
 
 The journey uses one sticky viewport. Subsequent company sections scroll normally. The previous extra pinned capability/equipment panels were removed. Project filters and modals, the regional map, actual equipment photographs, portraits, certificates and the enquiry workflow remain functional.
 
-To regenerate the assets, download the licensed original linked in `src/data/footage-sources.json` outside the checkout, then run `node qa/sequence/render.mjs /absolute/path/to/highway.mp4`. Requires ffmpeg and Python Pillow. The extractor writes the desktop/mobile WebP files under `public/film-hq`. The production build validates all frames and fingerprints their contents; the new path also prevents reuse of the replaced CGI assets.
+To regenerate the assets, download the licensed original linked in `src/data/footage-sources.json` outside the checkout, then run `node qa/sequence/render.mjs /absolute/path/to/highway.mp4` followed by `python3 qa/sequence/previews.py`. Requires ffmpeg and Python Pillow. The extractor writes the full-quality WebP files under `public/film-hq`; preview sheets are written under `public/film-preview`. The production build validates and fingerprints both.
 
 ## Source material and content review
 
@@ -63,6 +63,8 @@ The contact form clearly prepares a local email draft for the visitor to review 
 `qa/scroll-journey-check.mjs` checks exact forward/reverse frame indices, stopped playback, equivalent return views, chapter navigation, mobile scrubbing, overflow and reduced motion. Chrome GPU/CPU canvas resampling differs slightly at subpixel edges; the return-view check allows a measured mean difference below 1/255 while requiring the exact frame index.
 
 `qa/frame-loading-check.mjs` checks scrubbing with connections blocked by CSP, automatic retry after an image failure, and explicit recovery after repeated failures.
+
+`qa/hero-network-check.mjs` checks continuous forward/reverse scrolling at 350ms network latency on desktop, Retina and mobile, followed by full-quality resting frames. It also checks that wheel events do not repeatedly start full-resolution downloads.
 
 `qa/experience-check.mjs` verifies all twelve desktop/mobile section layouts, word animation, photograph reveals, absence of decorative section borders, absence of hover image scaling, Retina frame selection and reduced-motion text visibility.
 

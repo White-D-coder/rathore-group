@@ -1,7 +1,7 @@
 {
   "basePath": "/film-hq",
   "kind": "real-footage",
-  "version": "396981a5272c",
+  "version": "6a3798183490",
   "desktop": {
     "count": 180,
     "width": 1920,
@@ -16,5 +16,21 @@
     "count": 120,
     "width": 1080,
     "height": 1920
+  },
+  "preview": {
+    "desktop": {
+      "src": "/film-preview/desktop.webp",
+      "count": 48,
+      "columns": 8,
+      "width": 480,
+      "height": 270
+    },
+    "mobile": {
+      "src": "/film-preview/mobile.webp",
+      "count": 36,
+      "columns": 6,
+      "width": 270,
+      "height": 480
+    }
   }
 }

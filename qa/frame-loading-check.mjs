@@ -9,7 +9,7 @@ async function seek(page, index) {
   }, index);
 }
 async function frame(page, index) {
-  await page.waitForFunction(index => document.querySelector('.journey-canvas')?.dataset.frame === String(index), index, { timeout: 15000 });
+  await page.waitForFunction(index => document.querySelector('.journey-canvas')?.dataset.frame === String(index) && document.querySelector('.scroll-journey')?.dataset.frameQuality === 'full', index, { timeout: 15000 });
 }
 try {
   const strict = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -58,7 +58,8 @@ try {
   await seek(recovery, 87);
   await recovery.getByRole('button', { name: 'Retry', exact: true }).waitFor();
   assert.equal(failures, 2, 'Bound automatic requests during a persistent outage');
-  assert.equal(await recovery.locator('.journey-canvas').getAttribute('data-frame'), '0', 'Keep last good view while loading fails');
+  assert.equal(await recovery.locator('.scroll-journey').getAttribute('data-frame-quality'), 'preview', 'Keep the matching scrub preview visible while full-quality loading fails');
+  assert.ok(Math.abs(Number(await recovery.locator('.journey-canvas').getAttribute('data-frame')) - 87) <= 2, 'The fallback must remain close to the requested view');
   await seek(recovery, 0);
   await recovery.waitForFunction(() => document.querySelector('.scroll-journey')?.dataset.loadState === 'ready');
   await seek(recovery, 87);

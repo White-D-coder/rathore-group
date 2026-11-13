@@ -50,7 +50,7 @@ const chapters = [
 const stops = [0, 0.245, 0.485, 0.735, 0.955];
 type LoadState = "ready" | "loading" | "error";
 
-/** A frame is a pure function of native scroll position. No time-based playback. */
+/** Native scroll drives a lightweight preview; settled views resolve to full quality. */
 export default function ScrollJourney() {
   const section = useRef<HTMLElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -71,12 +71,19 @@ export default function ScrollJourney() {
     const retina = !mobile && matchMedia("(min-resolution: 1.5dppx), (min-width: 1921px)").matches;
     const variant = mobile ? "mobile" : retina ? "retina" : "desktop";
     const count = sequence[variant].count;
+    const previewSpec = sequence.preview[mobile ? "mobile" : "desktop"];
+    const preview = new Image();
+    preview.decoding = "async";
+    preview.fetchPriority = "high";
+    let previewReady = false;
+    let fullQuality = false;
     const limit = mobile ? 3 : retina ? 2 : 8;
     const concurrency = mobile || retina ? 2 : 4;
     const cache = new Map<number, HTMLImageElement>();
     const pending = new Map<number, () => void>();
     const attempts = new Map<number, number>();
     let statusTimer: ReturnType<typeof setTimeout> | undefined;
+    let detailTimer: ReturnType<typeof setTimeout> | undefined;
     let queue: number[] = [];
     let wanted = 0;
     let lastDrawn = -1;
@@ -94,25 +101,24 @@ export default function ScrollJourney() {
     function waitForFrame() {
       clearTimeout(statusTimer);
       statusTimer = setTimeout(() => {
-        if (wanted !== lastDrawn) status("loading");
+        if (!previewReady && wanted !== lastDrawn) status("loading");
       }, 450);
     }
-    function draw(index: number) {
+    function paint(image: HTMLImageElement, index: number, quality: "preview" | "full", x = 0, y = 0, width = image.naturalWidth, height = image.naturalHeight) {
       if (!context || !element) return;
-      const image = cache.get(index);
-      if (!image) return;
-      const width = image.naturalWidth;
-      const height = image.naturalHeight;
       const scale = Math.max(element.width / width, element.height / height);
       context.drawImage(
         image,
+        x, y, width, height,
         (element.width - width * scale) / 2,
         (element.height - height * scale) / 2,
         width * scale,
         height * scale,
       );
       lastDrawn = index;
-      if (index === wanted) {
+      fullQuality = quality === "full";
+      root!.dataset.frameQuality = quality;
+      if (fullQuality && index === wanted) {
         clearTimeout(statusTimer);
         status("ready");
       }
@@ -125,9 +131,22 @@ export default function ScrollJourney() {
       }
       element.dataset.frame = String(index);
       element.style.opacity = "1";
+    }
+    function draw(index: number) {
+      const image = cache.get(index);
+      if (!image) return;
+      paint(image, index, "full");
       // LRU: decoded frame memory stays bounded on both phones and desktops.
       cache.delete(index);
       cache.set(index, image);
+    }
+    function drawPreview(index: number) {
+      if (!previewReady) return;
+      const sample = Math.round(index * (previewSpec.count - 1) / (count - 1));
+      paint(preview, Math.round(sample * (count - 1) / (previewSpec.count - 1)), "preview",
+        (sample % previewSpec.columns) * previewSpec.width,
+        Math.floor(sample / previewSpec.columns) * previewSpec.height,
+        previewSpec.width, previewSpec.height);
     }
     function pump() {
       if (destroyed) return;
@@ -191,21 +210,28 @@ export default function ScrollJourney() {
       const changed = wanted !== index;
       wanted = index;
       root!.dataset.requestedFrame = String(index);
-      if (changed || index === lastDrawn) {
+      if (changed || (index === lastDrawn && fullQuality)) {
         clearTimeout(statusTimer);
         status("ready");
       }
-      if (index !== lastDrawn && cache.has(index)) draw(index);
+      if (cache.has(index)) {
+        if (index !== lastDrawn || !fullQuality) draw(index);
+      } else if (index !== lastDrawn || !fullQuality) drawPreview(index);
       for (const [n, cancel] of pending) {
         if (Math.abs(n - index) > 8) {
           pending.delete(n);
           cancel();
         }
       }
-      queue = [index, index + 1, index - 1, index + 2, index - 2, index + 3]
-        .filter(n => n >= 0 && n < count && !cache.has(n) && !pending.has(n));
-      if (lastDrawn !== index && (changed || !statusTimer)) waitForFrame();
-      pump();
+      clearTimeout(detailTimer);
+      const loadDetail = () => {
+        queue = cache.has(index) || pending.has(index) ? [] : [index];
+        if ((!fullQuality || lastDrawn !== index) && (changed || !statusTimer)) waitForFrame();
+        pump();
+      };
+      // The preview covers the whole flight; full-size requests wait for a pause.
+      if (lastDrawn < 0 || reduced) loadDetail();
+      else detailTimer = setTimeout(loadDetail, 120);
     }
     retry.current = () => {
       attempts.delete(wanted);
@@ -242,7 +268,10 @@ export default function ScrollJourney() {
         context.imageSmoothingEnabled = true;
         context.imageSmoothingQuality = "high";
       }
-      if (lastDrawn >= 0) draw(lastDrawn);
+      if (lastDrawn >= 0) {
+        if (fullQuality) draw(lastDrawn);
+        else drawPreview(wanted);
+      }
       scroll();
     }
     jump.current = (progress) => {
@@ -262,6 +291,12 @@ export default function ScrollJourney() {
     observer.observe(element);
     addEventListener("scroll", scroll, { passive: true });
     addEventListener("resize", resize, { passive: true });
+    preview.onload = () => {
+      if (destroyed) return;
+      previewReady = true;
+      if (!fullQuality || wanted !== lastDrawn) drawPreview(wanted);
+    };
+    if (!reduced) preview.src = `${previewSpec.src}?v=${sequence.version}`;
     resize();
     update();
     return () => {
@@ -271,6 +306,9 @@ export default function ScrollJourney() {
       removeEventListener("scroll", scroll);
       removeEventListener("resize", resize);
       clearTimeout(statusTimer);
+      clearTimeout(detailTimer);
+      preview.onload = null;
+      preview.removeAttribute("src");
       for (const cancel of pending.values()) cancel();
       pending.clear();
       cache.clear();

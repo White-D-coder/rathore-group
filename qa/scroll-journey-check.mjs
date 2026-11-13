@@ -40,7 +40,7 @@ for (const variant of [
     await page.waitForFunction(
       (expected) =>
         Number(document.querySelector(".journey-canvas")?.dataset.frame) ===
-        expected,
+        expected && document.querySelector('.scroll-journey')?.dataset.frameQuality === 'full',
       expected,
       { timeout: 15000 },
     );
@@ -112,7 +112,7 @@ for (const variant of [
   await page.waitForFunction(
     (expected) =>
       Number(document.querySelector(".journey-canvas")?.dataset.frame) ===
-      expected,
+      expected && document.querySelector('.scroll-journey')?.dataset.frameQuality === 'full',
     Math.round(0.485 * (variant.count - 1)),
     { timeout: 15000 },
   );

@@ -2,7 +2,7 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 const fingerprint=createHash('sha256');
-const manifest={basePath:'/film-hq',kind:'real-footage',version:'',desktop:{count:180,width:1920,height:1080},retina:{count:180,width:3840,height:2160},mobile:{count:120,width:1080,height:1920}};
+const manifest={basePath:'/film-hq',kind:'real-footage',version:'',desktop:{count:180,width:1920,height:1080},retina:{count:180,width:3840,height:2160},mobile:{count:120,width:1080,height:1920},preview:{desktop:{src:'/film-preview/desktop.webp',count:48,columns:8,width:480,height:270},mobile:{src:'/film-preview/mobile.webp',count:36,columns:6,width:270,height:480}}};
 for (const [variant, count, width, height] of [
   ["desktop", 180, 1920, 1080],
   ["retina", 180, 3840, 2160],
@@ -36,6 +36,16 @@ for (const [variant, count, width, height] of [
   console.log(
     `${variant}: ${count} complete WebP frames, ${width} × ${height}, ${(bytes / 1024 / 1024).toFixed(2)} MiB`,
   );
+}
+for (const [variant, preview] of Object.entries(manifest.preview)) {
+  const file = await readFile(path.resolve('public', '.' + preview.src));
+  const width = preview.columns * preview.width;
+  const height = Math.ceil(preview.count / preview.columns) * preview.height;
+  if (file.subarray(8, 12).toString() !== 'WEBP' || file.subarray(12, 16).toString() !== 'VP8 '
+    || (file.readUInt16LE(26) & 0x3fff) !== width || (file.readUInt16LE(28) & 0x3fff) !== height)
+    throw Error(`Invalid ${variant} preview sheet; regenerate with python3 qa/sequence/previews.py`);
+  fingerprint.update(file);
+  console.log(`${variant}: scrub preview ${(file.length / 1024).toFixed(0)} KiB`);
 }
 manifest.version=fingerprint.digest('hex').slice(0,12);
 const manifestPath=path.resolve('src/data/sequence-manifest.json');
