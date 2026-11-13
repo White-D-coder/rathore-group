@@ -1,58 +1,42 @@
-# Real-footage update verification — 13 November 2026
+# Experience refresh verification — 13 November 2026
 
-The CGI homepage sequence was replaced with 16 seconds of a real, continuous drone flight through a cable-stayed bridge. Frames are extracted directly from licensed Mixkit footage. The background is identified as illustrative footage, and the top label refers to Mumbai headquarters rather than implying the filmed location. All company records, approved PDF assets, projects, equipment, leadership portraits and certificates are retained.
+The homepage now uses distinct, divider-free compositions for its twelve corporate sections. The impact section is a compact unframed band with five supplied metrics. The remaining compositions include an image-led story, offset portfolio photography, a capability index, geographic reach, numbered execution rows, equipment catalogue, staggered leadership portraits, group index, institutional clients and original certificates, responsibility and contact invitation.
 
-## Sequence checks
+## Motion and visual review
 
-- 180 desktop WebP frames at 1280 × 800; 120 mobile frames at 600 × 900.
-- All 300 files are checked for count, format, dimensions and truncation before the production build.
-- Scroll maps directly to `round(progress × (frameCount - 1))` in both directions.
-- Production Chrome checks pass at 11 forward/reverse scroll positions per device, including the first and last frame.
-- Stopping holds the selected frame. Returning to a prior position produces the same view.
-- Chapter controls, mobile scrubbing and reduced-motion still behavior pass.
-- The final chapter’s continuation link reaches the company overview on desktop and mobile.
-- Native image loading works when `connect-src` is blocked by CSP (the test first confirms fetch is actually blocked).
-- A simulated failed frame automatically retries. Two consecutive failures show a visible error and Retry button; manual recovery draws the exact requested frame while retaining the last good view during the outage.
-- Decoded frame memory is bounded. The hero does not use live WebGL, autoplay or a time-driven camera loop.
-- Actual displayed frames drive chapter copy. Frame URLs include a content fingerprint to avoid stale cached sequences after future revisions.
+`qa/experience-check.mjs` passes on desktop and mobile:
 
-The return-view check allows a measured canvas resampling difference below 1/255 per channel; Chrome can switch GPU/CPU resampling after pixel readbacks. It still requires exact frame indices and checks distinct camera views.
+- All twelve sections have no horizontal page overflow and no top/bottom divider borders.
+- Heading words remain pending until the reader reaches them, then reveal in a masked stagger. Paragraphs and supporting information enter in sequence. Numeric counts start when their individual values enter the viewport.
+- Photographs reveal on scroll; masks are applied to the image child so the observer can measure the unmasked parent. Images substantially within the viewport are checked for their completed reveal.
+- Project hover does not scale the photograph. Leadership portrait and certificate hover scaling is also removed.
+- The navbar and its enquiry link have no decorative bottom border. Decorative gold rules, card dividers and footer separators are removed.
+- Reduced-motion visitors receive readable text and still imagery without the entrance animations.
+- Desktop and mobile screenshots are reviewed under `/tmp/rathore-refresh`.
 
-## Build and regression checks
+## Hero quality and loading
 
-The production static export succeeds for all generated pages. Project status/sector filters, project modal Escape dismissal, regional project selection, enquiry-to-email-draft generation, mobile navigation, seven main mobile routes without horizontal overflow and reduced motion pass. The checks send no email. No uncaught browser errors or failed asset requests were recorded.
+The source is real Pexels footage by 耀明 钟, `Aerial View of City Skyline with Bridge and River`, with a verified native 3848 × 2160 download. License, exact source URL and extraction settings are recorded in `src/data/footage-sources.json`. The background remains identified as illustrative, rather than a Rathore project.
 
-Desktop and mobile captures of the beginning, three middle chapters and end were reviewed. The old extra pinned capability and equipment sections were removed; the main sequence supplies the continuous pinned journey. Other sections scroll normally.
+- Desktop: 180 frames, 1920 × 1080.
+- Retina: 180 frames, native 3840 × 2160.
+- Mobile: 120 portrait frames, 1080 × 1920.
+- WebP quality is 86 rather than the previous 74. Frame dimensions and complete file counts are validated before every build.
+- A 1512 × 982 viewport at DPR 2 selects the Retina source and draws to a 3024 × 1964 canvas. This is tested explicitly, including a seek to frame 87.
+- Frame cache: eight desktop, two Retina, three mobile. Pending requests are limited to four desktop or two Retina/mobile. Frames load on demand, not all at startup. Higher source quality increases bytes per requested frame; no mobile-network performance score is claimed.
+- `qa/scroll-journey-check.mjs` passes exact forward/reverse indices, frozen frames, equivalent return views, chapter controls and final continuation on desktop and mobile. Reduced motion remains still.
+- `qa/frame-loading-check.mjs` passes native loading with connect-src blocked, one failed request followed by automatic retry, repeated failures with a visible Retry button, and successful explicit recovery. The last good frame stays visible during a failure.
 
-## Historical Lighthouse measurements
+## Build and interaction regression
 
-The following scores were measured before the real-footage replacement and are retained as historical data, not measurements of the current footage or loader. No new Lighthouse run is claimed. The earlier isolated mobile run used standard simulated mobile throttling:
+TypeScript and the static production build pass for all 30 pages. `qa/browser-check.mjs` passes project filtering, modal keyboard dismissal, region/project selection, enquiry draft creation, mobile navigation and all seven main mobile routes without overflow. No email is sent by a check. No uncaught browser errors or failed assets were recorded.
 
-| Category | Score |
-| --- | ---: |
-| Performance | 98 |
-| Accessibility | 100 (final correction verified) |
-| Best Practices | 100 |
-| SEO | 100 |
+Prior Lighthouse measurements predate these changes and do not measure this refresh. No new performance audit is claimed.
 
-First Contentful Paint: 1.5 s. Largest Contentful Paint: 2.2 s. Total Blocking Time: 10 ms. Cumulative Layout Shift: 0.016.
+## Local development repair retained
 
-Reports and screenshots are local QA artifacts under `/tmp/rathore-redesign`. These are lab measurements, not field guarantees. No desktop hardware-GPU performance claim is made. The final accessibility-only audit confirms the certificate-label contrast repair.
+Development uses `.next-dev/` and production builds use `.next/`, preventing a production build from overwriting the active dev runtime. Tailwind and its PostCSS compiler remain pinned together at 4.1.18, avoiding the earlier ESM-only magic-string incompatibility. Port 3001 is the active development preview; duplicate development servers were stopped.
 
-## Content provenance
+## Corporate provenance
 
-The primary content source remains the 32-page `RNB CORPORATE PROFILE 2026.pdf`. Actual photographs are used for 15 named projects, three leaders and all 12 equipment types. The Pali rendering and two electrical/solar sector illustrations remain explicitly identified. All 17 documented regions distinguish regional presence from named project status. Six original certificate scans remain available in the lightbox.
-
-## Loading investigation and publication limit
-
-The production Worker error log query returned no events. Anonymous access to the owner-private URL returns 401, so an unauthenticated browser cannot verify the owner’s exact failure. The previous fetch/blob decoding path could silently retain the first frame after errors; the new native image path removes those dependencies and exposes recoverable failures. Local production-browser checks confirm the new behavior under a blocked connection policy and simulated image outages; they do not establish the exact cause of the original report.
-
-All 300 replacement files validate. The optimized footage totals 9.25 MiB desktop and 3.62 MiB mobile, loaded on demand rather than all at startup. `/film` replaces the previous CGI path and each frame URL contains the content fingerprint. The source and license are recorded in `src/data/footage-sources.json`; raw video stays outside the repository.
-
-## Local HTTP 500 repair
-
-A direct request to the existing local Next.js development server on port 3000 reproduced HTTP 500. Loading its compiled homepage module failed with `Cannot find module './770.js'`: the active development runtime and production page chunks had been mixed in `.next/`. Development now uses `.next-dev/` and production retains `.next/`; the development directory is ignored and its generated types are included.
-
-A fresh development process additionally exposed `ERR_REQUIRE_ESM` from the Tailwind 4.3.5 compiler requiring the ESM-only `magic-string` 1.4.5. Tailwind and its PostCSS plugin are pinned together to 4.1.18, which uses the compatible `magic-string` 0.30.21. Dependencies were reinstalled from the updated lockfile.
-
-The homepage, a project detail page and the first film frame returned HTTP 200 after the repair. A production build completed all 30 pages while the development server stayed running, and the homepage still returned HTTP 200 afterward. Local Chrome regression checks passed for portfolio filtering, modals, regional selection, enquiry drafts, mobile navigation and all seven main mobile routes, with no browser errors or failed asset requests.
+Company content remains grounded in the supplied 32-page `RNB CORPORATE PROFILE 2026.pdf`. All 17 project records, three original leadership portraits, twelve equipment photographs, seventeen documented regions and six original certificate scans are retained. The Pali architectural visualization and electrical/solar sector illustrations remain identified. Executed project value is kept distinct from turnover and work in hand.

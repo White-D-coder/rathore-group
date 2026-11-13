@@ -38,7 +38,7 @@ export default function Motion() {
         if (!registered.has(section)) { registered.add(section); sectionObserver.observe(section); }
       });
       const selectors = [
-        ".text-reveal", ".footer-top", ".footer-grid > div", ".footer-bottom", ".section-label", ".stats-heading", ".stat", ".page-heading > .container > p",
+        ".impact-topline", ".impact-primary", ".impact-fact", ".impact-caption", ".text-reveal", ".footer-top", ".footer-grid > div", ".footer-bottom", ".section-label", ".stats-heading", ".stat", ".page-heading > .container > p",
         "section:not(.scroll-journey) p", ".vision-mission > div", ".strengths-grid > article",
         ".group-companies > div", ".client-logos > div", ".certificate-card", ".responsibility-values > div",
         ".project-meta", ".project-card-bottom", ".leader-role", ".capability-tabs > button",

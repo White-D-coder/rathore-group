@@ -39,22 +39,17 @@ export function Stats() {
       ref={ref}
       aria-label="Company at a glance"
     >
-      <div className="stats-heading">
-        <span className="eyebrow">A LEGACY, MEASURED IN IMPACT</span>
+      <div className="impact-topline">
+        <RevealText>A legacy,<span className="serif-accent"> measured in impact.</span></RevealText>
         <span>THREE DECADES. ONE COMMITMENT.</span>
       </div>
-      <div className="stats-intro"><RevealText>A legacy.<br /><span className="serif-accent">Measured in impact.</span></RevealText><p>Engineering progress since 1994.</p></div>
-      <div className="stats-grid">
-        {company.metrics.map((m) => (
-          <div className="stat" key={m.label}>
-            <div>
-              <span>{m.prefix}</span>
-              <Count
-                target={m.value}
-                visible={visible}
-                year={m.value === 1994}
-              />
-              <span>{m.suffix}</span>
+      <div className="impact-facts">
+        {company.metrics.map((m, index) => (
+          <div className={`impact-fact ${index === 0 ? "impact-fact-primary" : ""}`} key={m.label}>
+            <div className="impact-fact-value">
+              {m.prefix && <span className="impact-currency">{m.prefix}</span>}
+              <Count target={m.value} visible={visible} year={m.value === 1994} />
+              <span className="impact-suffix">{m.suffix}</span>
               {m.unit && <small>{m.unit}</small>}
             </div>
             <p>{m.label}</p>
@@ -74,9 +69,18 @@ function Count({
   year: boolean;
 }) {
   const [n, setN] = useState(target);
+  const number = useRef<HTMLSpanElement>(null);
+  const [onScreen, setOnScreen] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setOnScreen(true); observer.disconnect(); }
+    }, { threshold: 0.4 });
+    if (number.current) observer.observe(number.current);
+    return () => observer.disconnect();
+  }, []);
   useEffect(() => {
     if (
-      !visible ||
+      !visible || !onScreen ||
       year ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     )
@@ -90,8 +94,8 @@ function Count({
     }
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [visible, target, year]);
-  return <>{year ? n : n.toLocaleString("en-IN")}</>;
+  }, [visible, onScreen, target, year]);
+  return <span className="count-value" ref={number}>{year ? n : n.toLocaleString("en-IN")}</span>;
 }
 export default function Home() {
   return (

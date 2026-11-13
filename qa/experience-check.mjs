@@ -33,6 +33,11 @@ try {
       assert.equal(overflow, false, `${variant.name} ${name}: horizontal overflow`);
       const borders = await page.locator(selector).evaluate(el => ({ top: getComputedStyle(el).borderTopWidth, bottom: getComputedStyle(el).borderBottomWidth }));
       assert.deepEqual(borders, { top: '0px', bottom: '0px' }, `${name}: decorative section divider remains`);
+      const visibleMedia = await page.locator(selector + ' .media-reveal').evaluateAll(elements => elements.filter(el => { const r = el.getBoundingClientRect(); const width = Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0)); const height = Math.max(0, Math.min(r.bottom, innerHeight * .95) - Math.max(r.top, 0)); return width * height / (r.width * r.height) > .2; }).map(el => ({ revealed: el.classList.contains('is-in-view'), clip: getComputedStyle(el.querySelector('img')).clipPath })));
+      for (const media of visibleMedia) {
+        assert.equal(media.revealed, true, `${name}: photograph did not reveal`);
+        assert.match(media.clip, /^inset\(0/, `${name}: photograph remains masked`);
+      }
       await page.screenshot({ path: `/tmp/rathore-refresh/${variant.name}-${name}.png` });
     }
     await heading.scrollIntoViewIfNeeded();

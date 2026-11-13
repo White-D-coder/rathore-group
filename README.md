@@ -18,10 +18,12 @@ The development server uses `.next-dev/`; production builds use `.next/`. This l
 ## Content and structure
 
 - `src/data/company.ts`: company details, independently editable metrics, all 17 supplied projects and values, capabilities, leadership, companies, equipment, and registrations.
-- `src/components/ScrollJourney.tsx`: native-scroll image-sequence player, five chapters, bounded decoded-frame cache, reverse scrubbing and responsive frames.
+- `src/components/ScrollJourney.tsx`: native-scroll image-sequence player, five chapters, bounded decoded-frame cache, reverse scrubbing and desktop, 4K Retina and mobile frames.
+- `src/components/RevealText.tsx` and `Motion.tsx`: React-owned masked word reveals, scroll-triggered paragraph and photograph entrances, viewport-triggered numbers, reduced-motion support.
+- `src/app/experience.css`: divider-free section compositions and the compact impact band.
 - `qa/sequence/render.mjs` and `extract.py`: extract real footage into optimized WebP frames using ffmpeg and Pillow. The main sequence needs no live WebGL at runtime.
 - `src/data/footage-sources.json`: original clip, license, extraction settings and usage provenance.
-- `qa/sequence/validate.mjs`: validates all 300 frames before each build.
+- `qa/sequence/validate.mjs`: validates all 480 frames before each build.
 - `src/components/IndiaMapScene.tsx`: extruded geographic map with scroll-controlled camera framing.
 - `src/data/india.json`: projected Natural Earth map geometry, not a boundary reference.
 - `src/components/Sections.tsx`: corporate content and interactive portfolio, regional selection and equipment browser.
@@ -30,15 +32,15 @@ The development server uses `.next-dev/`; production builds use `.next/`. This l
 - `src/app/projects/[slug]/page.tsx`: statically generated project pages.
 - `src/app/globals.css` and `src/app/redesign.css`: editorial design system, responsive layouts and motion preferences.
 
-The crest is the original official artwork, displayed at its original proportions. The sequence is a continuous real drone flight, used as illustrative stock footage rather than a company project. Desktop has 180 photographed frames; mobile has 120. Reduced-motion visitors receive a still image and can explicitly select chapters.
+The crest is the original official artwork, displayed at its original proportions. The sequence is a continuous real drone flight from a native 3848 × 2160 source, used as illustrative stock footage rather than a company project. Desktop has 180 Full HD frames; Retina displays have 180 native 3840 × 2160 frames; mobile has 120 portrait 1080 × 1920 frames. Reduced-motion visitors receive a still image and can explicitly select chapters.
 
 ## Frame-by-frame behavior
 
-Native scroll progress maps directly to `round(progress × (frameCount - 1))`. No autoplay, time-based camera loop or delayed smooth scrolling drives the sequence. Stopping freezes the view; reversing retraces the same source frames. Headings update with the frame that was actually drawn. Only nearby frames are loaded using native images, with at most four pending requests. The decoded cache is capped at 12 desktop frames or 8 mobile frames. Loading has a delayed status, an automatic retry, and a manual recovery button; the poster or last good frame stays visible during failures.
+Native scroll progress maps directly to `round(progress × (frameCount - 1))`. No autoplay, time-based camera loop or delayed smooth scrolling drives the sequence. Stopping freezes the view; reversing retraces the same source frames. Headings update with the frame that was actually drawn. Only nearby frames are loaded using native images, with four pending requests on standard desktops and two on Retina/mobile. The decoded cache is capped at eight Full HD frames, two 4K Retina frames or three mobile frames. Canvas resolution follows device pixel ratio up to 2, with high-quality resampling. Loading has a delayed status, an automatic retry, and a manual recovery button; the poster or last good frame stays visible during failures.
 
 The journey uses one sticky viewport. Subsequent company sections scroll normally. The previous extra pinned capability/equipment panels were removed. Project filters and modals, the regional map, actual equipment photographs, portraits, certificates and the enquiry workflow remain functional.
 
-To regenerate the assets, download the licensed original linked in `src/data/footage-sources.json` outside the checkout, then run `node qa/sequence/render.mjs /absolute/path/to/highway.mp4`. Requires ffmpeg and Python Pillow. The extractor writes the desktop/mobile WebP files under `public/film`. The production build validates all frames and fingerprints their contents; the new path also prevents reuse of the replaced CGI assets.
+To regenerate the assets, download the licensed original linked in `src/data/footage-sources.json` outside the checkout, then run `node qa/sequence/render.mjs /absolute/path/to/highway.mp4`. Requires ffmpeg and Python Pillow. The extractor writes the desktop/mobile WebP files under `public/film-hq`. The production build validates all frames and fingerprints their contents; the new path also prevents reuse of the replaced CGI assets.
 
 ## Source material and content review
 
@@ -62,6 +64,8 @@ The contact form clearly prepares a local email draft for the visitor to review 
 
 `qa/frame-loading-check.mjs` checks scrubbing with connections blocked by CSP, automatic retry after an image failure, and explicit recovery after repeated failures.
 
+`qa/experience-check.mjs` verifies all twelve desktop/mobile section layouts, word animation, photograph reveals, absence of decorative section borders, absence of hover image scaling, Retina frame selection and reduced-motion text visibility.
+
 `qa/browser-check.mjs` checks project filters, modal dismissal, regional selection, enquiry draft generation, mobile navigation and all main mobile routes. Set `RATHORE_BASE_URL` to change its default `http://127.0.0.1:3019`. No check sends an email.
 
 Current verification and lab measurements are recorded in `qa/verification.md`. Previous-design scores are historical and are not measurements of this redesign.
@@ -72,7 +76,7 @@ Current verification and lab measurements are recorded in `qa/verification.md`. 
 - Official company assets: `https://www.rathoregroup.co.in/images/`.
 - Geographic data: [Natural Earth admin-0 1:110m](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_admin_0_countries.geojson), public domain; simplified regional representation.
 - Manrope and Inter: Google Fonts, self-hosted Latin WOFF2 subsets, SIL Open Font License.
-- Scroll sequence: [Mixkit — Aerial travel above a highway in the city](https://mixkit.co/free-stock-video/aerial-travel-above-a-highway-in-the-city-41540/), under the [Mixkit Stock Video Free License](https://mixkit.co/license/#videoFree). Real filmed footage; illustrative use only. Source and extraction details are recorded in `src/data/footage-sources.json`. Capability photographs are approved PDF project images.
+- Scroll sequence: [Pexels — Aerial View of City Skyline with Bridge and River](https://www.pexels.com/video/aerial-view-of-city-skyline-with-bridge-and-river-31198061/) by 耀明 钟, under the [Pexels License](https://www.pexels.com/license/). Real filmed footage; illustrative use only. Source and extraction details are recorded in `src/data/footage-sources.json`. Capability photographs are approved PDF project images.
 
 ## Hosting
 
